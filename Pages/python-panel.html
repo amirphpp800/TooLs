@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TooLs - پنل پایتونی</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <div id="loading" class="loading-screen">
+    <div class="loading-content">
+      <div class="loading-logo">TooLs</div>
+      <div class="loading-spinner"></div>
+      <p class="loading-text">در حال بارگذاری...</p>
+    </div>
+  </div>
+  <div id="main-content" class="main-content hidden">
+    <header class="header">
+      <nav class="navbar">
+        <div class="nav-brand"><h1 class="logo">TooLs</h1></div>
+        <ul class="nav-menu">
+          <li><a class="nav-link" href="../index.html">خانه</a></li>
+          <li class="dropdown">
+            <a href="#" class="nav-link dropdown-toggle">سیستم عامل<span class="dropdown-arrow">▼</span></a>
+            <div class="dropdown-menu">
+              <a href="ios/" class="dropdown-item"><span class="item-icon" aria-hidden="true"><img src="../icons/apple.svg" alt="Apple"/></span>آیفون</a>
+              <a href="android/" class="dropdown-item"><span class="item-icon" aria-hidden="true"><img src="../icons/android.svg" alt="Android"/></span>اندروید</a>
+              <a href="windows/" class="dropdown-item"><span class="item-icon" aria-hidden="true"><img src="../icons/windows.svg" alt="Windows"/></span>ویندوز</a>
+            </div>
+          </li>
+          <li class="dropdown">
+            <a href="#" class="nav-link dropdown-toggle">پنل ها<span class="dropdown-arrow">▼</span></a>
+            <div class="dropdown-menu">
+              <a href="web-panel/" class="dropdown-item"><span class="item-icon" aria-hidden="true"><img src="../icons/html-5.svg" alt="HTML5"/></span>سایتی</a>
+              <a href="python-panel.html" class="dropdown-item"><span class="item-icon" aria-hidden="true"><img src="../icons/python.svg" alt="Python"/></span>پایتونی</a>
+            </div>
+          </li>
+          <li class="dropdown">
+            <a href="#" class="nav-link dropdown-toggle">سرور اختصاصی<span class="dropdown-arrow">▼</span></a>
+            <div class="dropdown-menu">
+              <a href="openvpn.html" class="dropdown-item"><span class="item-icon" aria-hidden="true"><img src="../icons/openvpn.svg" alt="OpenVPN"/></span>اوپن وی پی ان</a>
+              <a href="dns.html" class="dropdown-item"><span class="item-icon" aria-hidden="true"><img src="../icons/dns.png" alt="DNS"/></span>دی ان اس</a>
+              <a href="wireguard.html" class="dropdown-item"><span class="item-icon" aria-hidden="true"><img src="../icons/wireguard.svg" alt="WireGuard"/></span>وایرگارد</a>
+            </div>
+          </li>
+          <li><a class="nav-link" href="about.html">درباره ما</a></li>
+        </ul>
+        <div class="hamburger"><span></span><span></span><span></span></div>
+      </nav>
+    </header>
+    <div class="scroll-progress" aria-hidden="true"><span></span></div>
+
+    <main class="section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">پنل‌های پایتونی</h2>
+          <p class="section-subtitle">اینجا محتوای پنل‌های پایتونی (Flask, FastAPI, Django) قرار می‌گیرد</p>
+        </div>
+        <div class="content-block glass-card" style="display:block;">
+          <p class="about-text">لطفاً مشخص کنید برای پنل‌های پایتونی چه امکاناتی می‌خواهید (API، داشبورد، احراز هویت و ...).</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-bottom">
+          <p>© 2024 TooLs</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+  <script src="../script.js"></script>
+</body>
+</html>

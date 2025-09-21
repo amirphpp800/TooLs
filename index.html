@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro TooLs - ابزارهای دیجیتال</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-logo"><span lang="en">Pro TooLs</span></div>
+            <div class="loading-spinner"></div>
+            <p class="loading-text">در حال بارگذاری...</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" class="main-content hidden">
+        <!-- Header -->
+        <header class="header">
+            <nav class="navbar">
+                <div class="nav-brand">
+                    <a href="index.html" class="logo-link"><h1 class="logo"><span lang="en">Pro TooLs</span></h1></a>
+                </div>
+                <ul class="nav-menu">
+                    <li>
+                        <a href="index.html" class="nav-link active">
+                            <span class="nav-icon" aria-hidden="true">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1v-5H10v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-10.5z" fill="currentColor"/></svg>
+                            </span>
+                            <span>خانه</span>
+                        </a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" id="osDropdown">
+                            <span class="nav-icon" aria-hidden="true">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5h18v4H3V5zm0 5h18v4H3v-4zm0 5h18v4H3v-4z" fill="currentColor"/></svg>
+                            </span>
+                            <span>سیستم عامل</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </a>
+                        <div class="dropdown-menu" id="osMenu">
+                            <a href="Pages/ios/" class="dropdown-item">
+                                <span class="item-icon" aria-hidden="true">
+                                    <img src="icons/apple.svg" alt="Apple" />
+                                </span>
+                                آیفون
+                            </a>
+                            <a href="Pages/android/" class="dropdown-item">
+                                <span class="item-icon" aria-hidden="true">
+                                    <img src="icons/android.svg" alt="Android" />
+                                </span>
+                                اندروید
+                            </a>
+                            <a href="Pages/windows/" class="dropdown-item">
+                                <span class="item-icon" aria-hidden="true">
+                                    <img src="icons/windows.svg" alt="Windows" />
+                                </span>
+                                ویندوز
+                            </a>
+                        </div>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" id="panelsDropdown">
+                            <span class="nav-icon" aria-hidden="true">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5h8v6H3V5zm10 0h8v6h-8V5zM3 13h8v6H3v-6zm10 0h8v6h-8v-6z" fill="currentColor"/></svg>
+                            </span>
+                            <span>پنل ها</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </a>
+                        <div class="dropdown-menu" id="panelsMenu">
+                            <a href="Pages/web-panel/" class="dropdown-item">
+                                <span class="item-icon" aria-hidden="true">
+                                    <img src="icons/html-5.svg" alt="HTML5" />
+                                </span>
+                                سایتی
+                            </a>
+                            <a href="Pages/python-panel.html" class="dropdown-item">
+                                <span class="item-icon" aria-hidden="true">
+                                    <img src="icons/python.svg" alt="Python" />
+                                </span>
+                                پایتونی
+                            </a>
+                        </div>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" id="serversDropdown">
+                            <span class="nav-icon" aria-hidden="true">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h16v6H4V4zm0 10h16v6H4v-6zm3 1v2h2v-2H7zM7 5v2h2V5H7z" fill="currentColor"/></svg>
+                            </span>
+                            <span>سرور اختصاصی</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </a>
+                        <div class="dropdown-menu" id="serversMenu">
+                            <a href="Pages/openvpn.html" class="dropdown-item">
+                                <span class="item-icon" aria-hidden="true">
+                                    <img src="icons/openvpn.svg" alt="OpenVPN" />
+                                </span>
+                                اوپن وی پی ان
+                            </a>
+                            <a href="Pages/dns.html" class="dropdown-item">
+                                <span class="item-icon" aria-hidden="true">
+                                    <img src="icons/dns.png" alt="DNS" />
+                                </span>
+                                دی ان اس
+                            </a>
+                            <a href="Pages/wireguard.html" class="dropdown-item">
+                                <span class="item-icon" aria-hidden="true">
+                                    <img src="icons/wireguard.svg" alt="WireGuard" />
+                                </span>
+                                وایرگارد
+                            </a>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="Pages/about.html" class="nav-link">
+                            <span class="nav-icon" aria-hidden="true">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm-7 9a7 7 0 0114 0H5z" fill="currentColor"/></svg>
+                            </span>
+                            <span>درباره ما</span>
+                        </a>
+                    </li>
+                </ul>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </header>
+        <div class="scroll-progress" aria-hidden="true"><span></span></div>
+
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div id="tsparticles" aria-hidden="true"></div>
+            <div class="hero-content">
+                <h1 class="hero-title"><span lang="en">Pro TooLs</span></h1>
+                <p class="hero-subtitle">ابزارهای دیجیتال پیشرفته</p>
+                <p class="hero-description">
+                    بیش از 2 سال تجربه در ارائه بهترین تنظیمات، کانفیگ‌ها و پنل‌های دیجیتال
+                </p>
+                <!-- معرفی کوتاه - بدون دکمه -->
+            </div>
+        </section>
+        
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <h3 class="footer-logo">Pro TooLs</h3>
+                        <p class="footer-description">
+                            ابزارهای دیجیتال پیشرفته برای کاربران حرفه‌ای
+                        </p>
+                    </div>
+
+                    <div class="footer-links">
+                        <div class="footer-section">
+                            <h4 class="footer-title">دسترسی سریع</h4>
+                            <ul class="footer-list">
+                                <li><a href="index.html">خانه</a></li>
+                                <li><a href="Pages/ios/">آیفون</a></li>
+                                <li><a href="Pages/android/">اندروید</a></li>
+                                <li><a href="Pages/windows/">ویندوز</a></li>
+                                <li><a href="Pages/web-panel/">پنل سایتی</a></li>
+                                <li><a href="Pages/python-panel.html">پنل پایتونی</a></li>
+                                <li><a href="Pages/openvpn.html">OpenVPN</a></li>
+                                <li><a href="Pages/dns.html">DNS</a></li>
+                                <li><a href="Pages/wireguard.html">WireGuard</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="footer-section">
+                            <h4 class="footer-title">پشتیبانی</h4>
+                            <ul class="footer-list">
+                                <li><a href="#">راهنما</a></li>
+                                <li><a href="#">سوالات متداول</a></li>
+                                <li><a href="https://t.me/Minimalcraft" target="_blank" rel="noopener"><img src="icons/Telegram.svg" alt="Telegram" style="width:20px;height:20px;vertical-align:middle;margin-left:6px;"/>تماس با ما - Minimalcraft</a></li>
+                                <li><a href="https://t.me/NeoDebug" target="_blank" rel="noopener"><img src="icons/Telegram.svg" alt="Telegram" style="width:20px;height:20px;vertical-align:middle;margin-left:6px;"/>تماس با ما - NeoDebug</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="footer-section">
+                            <h4 class="footer-title">شبکه‌های اجتماعی</h4>
+                            <ul class="footer-list">
+                                <li><a href="https://t.me/PersianEdge" target="_blank" rel="noopener"><img src="icons/Telegram.svg" alt="Telegram" style="width:20px;height:20px;vertical-align:middle;margin-left:6px;"/>تلگرام - PersianEdge</a></li>
+                                <li><a href="https://t.me/NoiDUsers" target="_blank" rel="noopener"><img src="icons/Telegram.svg" alt="Telegram" style="width:20px;height:20px;vertical-align:middle;margin-left:6px;"/>تلگرام - NoiDUsers</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-bottom">
+                    <p>&copy; 2025 Pro TooLs. تمامی حقوق محفوظ است. | این سایت با کمک هوش مصنوعی در حال توسعه است و ممکن است برخی مطالب به صورت خودکار منتشر شده باشند.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
