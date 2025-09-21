@@ -24,24 +24,64 @@
           <li class="dropdown">
             <a href="#" class="nav-link dropdown-toggle"><span class="nav-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5h18v4H3V5zm0 5h18v4H3v-4zm0 5h18v4H3v-4z" fill="currentColor"/></svg></span><span>سیستم عامل</span><span class="dropdown-arrow">▼</span></a>
             <div class="dropdown-menu">
-              <a href="ios/" class="dropdown-item">آیفون</a>
-              <a href="android/" class="dropdown-item">اندروید</a>
-              <a href="windows/" class="dropdown-item">ویندوز</a>
+              <a href="ios/" class="dropdown-item">
+                <span class="item-icon" aria-hidden="true">
+                  <img src="../icons/apple.svg" alt="Apple" />
+                </span>
+                آیفون
+              </a>
+              <a href="android/" class="dropdown-item">
+                <span class="item-icon" aria-hidden="true">
+                  <img src="../icons/android.svg" alt="Android" />
+                </span>
+                اندروید
+              </a>
+              <a href="windows/" class="dropdown-item">
+                <span class="item-icon" aria-hidden="true">
+                  <img src="../icons/windows.svg" alt="Windows" />
+                </span>
+                ویندوز
+              </a>
             </div>
           </li>
           <li class="dropdown">
             <a href="#" class="nav-link dropdown-toggle"><span class="nav-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5h8v6H3V5zm10 0h8v6h-8V5zM3 13h8v6H3v-6zm10 0h8v6h-8v-6z" fill="currentColor"/></svg></span><span>پنل ها</span><span class="dropdown-arrow">▼</span></a>
             <div class="dropdown-menu">
-              <a href="web-panel/" class="dropdown-item">سایتی</a>
-              <a href="python-panel.html" class="dropdown-item">پایتونی</a>
+              <a href="web-panel/" class="dropdown-item">
+                <span class="item-icon" aria-hidden="true">
+                  <img src="../icons/html-5.svg" alt="HTML5" />
+                </span>
+                سایتی
+              </a>
+              <a href="python-panel.html" class="dropdown-item">
+                <span class="item-icon" aria-hidden="true">
+                  <img src="../icons/python.svg" alt="Python" />
+                </span>
+                پایتونی
+              </a>
             </div>
           </li>
           <li class="dropdown">
             <a href="#" class="nav-link dropdown-toggle"><span class="nav-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h16v6H4V4zm0 10h16v6H4v-6zm3 1v2h2v-2H7zM7 5v2h2V5H7z" fill="currentColor"/></svg></span><span>سرور اختصاصی</span><span class="dropdown-arrow">▼</span></a>
             <div class="dropdown-menu">
-              <a href="openvpn.html" class="dropdown-item">اوپن وی پی ان</a>
-              <a href="dns.html" class="dropdown-item">دی ان اس</a>
-              <a href="wireguard.html" class="dropdown-item">وایرگارد</a>
+              <a href="openvpn.html" class="dropdown-item">
+                <span class="item-icon" aria-hidden="true">
+                  <img src="../icons/openvpn.svg" alt="OpenVPN" />
+                </span>
+                اوپن وی پی ان
+              </a>
+              <a href="dns.html" class="dropdown-item">
+                <span class="item-icon" aria-hidden="true">
+                  <img src="../icons/dns.png" alt="DNS" />
+                </span>
+                دی ان اس
+              </a>
+              <a href="wireguard.html" class="dropdown-item">
+                <span class="item-icon" aria-hidden="true">
+                  <img src="../icons/wireguard.svg" alt="WireGuard" />
+                </span>
+                وایرگارد
+              </a>
             </div>
           </li>
           <li><a class="nav-link" href="about.html"><span class="nav-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm-7 9a7 7 0 0114 0H5z" fill="currentColor"/></svg></span><span>درباره ما</span></a></li>
@@ -59,47 +99,7 @@
         </div>
 
         <div class="articles-grid">
-          <div class="glass-card article-card" data-title="Server Tunneling DNS Pack" data-content="Google\n8.8.8.8\n8.8.4.4\n\nCloudflare\n1.1.1.1\n1.0.0.1\n\nRadar Game\n10.202.10.10\n10.202.10.11\n\nElectro\n78.157.42.100\n78.157.42.101\n\nOpenDNS\n208.67.222.222\n208.67.220.220\n\nShecan (Free)\n178.22.122.100\n185.51.200.2\n\nShecan (Pro)\n178.22.122.101\n185.51.200.1" data-cover="../icons/dns.png">
-            <div class="article-cover"><img src="../icons/dns.png" alt="Server Tunneling" style="max-width:60px;opacity:.9"/></div>
-            <div class="article-title">Server Tunneling</div>
-            <div class="article-summary">A comprehensive DNS pack suitable for tunneling scenarios</div>
-          </div>
-
-          <div class="glass-card article-card" data-title="Google Public DNS" data-content="8.8.8.8\n8.8.4.4" data-cover="../icons/dns.png">
-            <div class="article-cover"><img src="../icons/dns.png" alt="Google DNS" style="max-width:60px;opacity:.9"/></div>
-            <div class="article-title">Google Public DNS</div>
-            <div class="article-summary">Reliable global anycast DNS: 8.8.8.8, 8.8.4.4</div>
-          </div>
-
-          <div class="glass-card article-card" data-title="Cloudflare DNS" data-content="1.1.1.1\n1.0.0.1" data-cover="../icons/dns.png">
-            <div class="article-cover"><img src="../icons/dns.png" alt="Cloudflare DNS" style="max-width:60px;opacity:.9"/></div>
-            <div class="article-title">Cloudflare DNS</div>
-            <div class="article-summary">Fast privacy-first resolver: 1.1.1.1, 1.0.0.1</div>
-          </div>
-
-          <div class="glass-card article-card" data-title="OpenDNS" data-content="208.67.222.222\n208.67.220.220" data-cover="../icons/dns.png">
-            <div class="article-cover"><img src="../icons/dns.png" alt="OpenDNS" style="max-width:60px;opacity:.9"/></div>
-            <div class="article-title">OpenDNS</div>
-            <div class="article-summary">Cisco OpenDNS resolvers for security and filtering</div>
-          </div>
-
-          <div class="glass-card article-card" data-title="Shecan (Free)" data-content="178.22.122.100\n185.51.200.2" data-cover="../icons/dns.png">
-            <div class="article-cover"><img src="../icons/dns.png" alt="Shecan" style="max-width:60px;opacity:.9"/></div>
-            <div class="article-title">Shecan (Free)</div>
-            <div class="article-summary">Local resolver pair for general usage</div>
-          </div>
-
-          <div class="glass-card article-card" data-title="Shecan (Pro)" data-content="178.22.122.101\n185.51.200.1" data-cover="../icons/dns.png">
-            <div class="article-cover"><img src="../icons/dns.png" alt="Shecan Pro" style="max-width:60px;opacity:.9"/></div>
-            <div class="article-title">Shecan (Pro)</div>
-            <div class="article-summary">Alternative pair for better availability</div>
-          </div>
-
-          <div class="glass-card article-card" data-title="Radar Game" data-content="10.202.10.10\n10.202.10.11" data-cover="../icons/dns.png">
-            <div class="article-cover"><img src="../icons/dns.png" alt="Radar Game" style="max-width:60px;opacity:.9"/></div>
-            <div class="article-title">Radar Game</div>
-            <div class="article-summary">Private resolvers for gaming acceleration</div>
-          </div>
+          <div id="dnsArticles"></div>
         </div>
       </div>
     </main>
@@ -108,10 +108,161 @@
     <div class="modal-backdrop" id="dnsModal">
       <div class="modal">
         <div class="modal-header">
-          <div class="modal-title" id="dnsModalTitle">Title</div>
-          <div class="modal-close" id="dnsModalClose">×</div>
+          <div class="modal-title" id="dnsModalTitle">سرور های DNS</div>
+          <div style="display:flex; align-items:center; gap:.5rem;">
+            <div class="modal-close" id="dnsModalClose" aria-label="بستن">×</div>
+          </div>
         </div>
-        <div class="modal-body" id="dnsModalBody">Content</div>
+        <div class="modal-body" id="dnsModalBody">
+          <div class="dns-servers-grid">
+            <div class="dns-server-card" data-provider="گوگل" data-primary="8.8.8.8" data-secondary="8.8.4.4">
+              <div class="dns-server-header">
+                <div class="dns-server-icon">🌐</div>
+                <div class="dns-server-name">گوگل</div>
+                <div class="dns-server-status online">آنلاین</div>
+              </div>
+              <div class="dns-server-ips">
+                <div class="dns-ip primary" data-ip="8.8.8.8">
+                  <span class="ip-label">اصلی:</span>
+                  <span class="ip-value">8.8.8.8</span>
+                  <button class="copy-btn" title="کپی">📋</button>
+                </div>
+                <div class="dns-ip secondary" data-ip="8.8.4.4">
+                  <span class="ip-label">ثانویه:</span>
+                  <span class="ip-value">8.8.4.4</span>
+                  <button class="copy-btn" title="کپی">📋</button>
+                </div>
+              </div>
+              <div class="dns-server-description">سرویس DNS سریع و قابل اعتماد گوگل</div>
+            </div>
+
+            <div class="dns-server-card" data-provider="کلودفلر" data-primary="1.1.1.1" data-secondary="1.0.0.1">
+              <div class="dns-server-header">
+                <div class="dns-server-icon">☁️</div>
+                <div class="dns-server-name">کلودفلر</div>
+                <div class="dns-server-status online">آنلاین</div>
+              </div>
+              <div class="dns-server-ips">
+                <div class="dns-ip primary" data-ip="1.1.1.1">
+                  <span class="ip-label">اصلی:</span>
+                  <span class="ip-value">1.1.1.1</span>
+                  <button class="copy-btn" title="کپی">📋</button>
+                </div>
+                <div class="dns-ip secondary" data-ip="1.0.0.1">
+                  <span class="ip-label">ثانویه:</span>
+                  <span class="ip-value">1.0.0.1</span>
+                  <button class="copy-btn" title="کپی">📋</button>
+                </div>
+              </div>
+              <div class="dns-server-description">سریع‌ترین DNS عمومی جهان با تمرکز بر حریم خصوصی</div>
+            </div>
+
+            <div class="dns-server-card" data-provider="رادار گیم" data-primary="10.202.10.10" data-secondary="10.202.10.11">
+              <div class="dns-server-header">
+                <div class="dns-server-icon">🎮</div>
+                <div class="dns-server-name">رادار گیم</div>
+                <div class="dns-server-status online">آنلاین</div>
+              </div>
+              <div class="dns-server-ips">
+                <div class="dns-ip primary" data-ip="10.202.10.10">
+                  <span class="ip-label">اصلی:</span>
+                  <span class="ip-value">10.202.10.10</span>
+                  <button class="copy-btn" title="کپی">📋</button>
+                </div>
+                <div class="dns-ip secondary" data-ip="10.202.10.11">
+                  <span class="ip-label">ثانویه:</span>
+                  <span class="ip-value">10.202.10.11</span>
+                  <button class="copy-btn" title="کپی">📋</button>
+                </div>
+              </div>
+              <div class="dns-server-description">DNS مخصوص گیمرها با تاخیر کم</div>
+            </div>
+
+            <div class="dns-server-card" data-provider="الکترو" data-primary="78.157.42.100" data-secondary="78.157.42.101">
+              <div class="dns-server-header">
+                <div class="dns-server-icon">⚡</div>
+                <div class="dns-server-name">الکترو</div>
+                <div class="dns-server-status online">آنلاین</div>
+              </div>
+              <div class="dns-server-ips">
+                <div class="dns-ip primary" data-ip="78.157.42.100">
+                  <span class="ip-label">اصلی:</span>
+                  <span class="ip-value">78.157.42.100</span>
+                  <button class="copy-btn" title="کپی">📋</button>
+                </div>
+                <div class="dns-ip secondary" data-ip="78.157.42.101">
+                  <span class="ip-label">ثانویه:</span>
+                  <span class="ip-value">78.157.42.101</span>
+                  <button class="copy-btn" title="کپی">📋</button>
+                </div>
+              </div>
+              <div class="dns-server-description">سرویس DNS سریع و امن الکترو</div>
+            </div>
+
+            <div class="dns-server-card" data-provider="اوپن دی ان اس" data-primary="208.67.222.222" data-secondary="208.67.220.220">
+              <div class="dns-server-header">
+                <div class="dns-server-icon">🛡️</div>
+                <div class="dns-server-name">اوپن دی ان اس</div>
+                <div class="dns-server-status online">آنلاین</div>
+              </div>
+              <div class="dns-server-ips">
+                <div class="dns-ip primary" data-ip="208.67.222.222">
+                  <span class="ip-label">اصلی:</span>
+                  <span class="ip-value">208.67.222.222</span>
+                  <button class="copy-btn" title="کپی">📋</button>
+                </div>
+                <div class="dns-ip secondary" data-ip="208.67.220.220">
+                  <span class="ip-label">ثانویه:</span>
+                  <span class="ip-value">208.67.220.220</span>
+                  <button class="copy-btn" title="کپی">📋</button>
+                </div>
+              </div>
+              <div class="dns-server-description">DNS امن با فیلتر محتوای مخرب</div>
+            </div>
+
+            <div class="dns-server-card" data-provider="شکن رایگان" data-primary="178.22.122.100" data-secondary="185.51.200.2">
+              <div class="dns-server-header">
+                <div class="dns-server-icon">🔓</div>
+                <div class="dns-server-name">شکن رایگان</div>
+                <div class="dns-server-status online">آنلاین</div>
+              </div>
+              <div class="dns-server-ips">
+                <div class="dns-ip primary" data-ip="178.22.122.100">
+                  <span class="ip-label">اصلی:</span>
+                  <span class="ip-value">178.22.122.100</span>
+                  <button class="copy-btn" title="کپی">📋</button>
+                </div>
+                <div class="dns-ip secondary" data-ip="185.51.200.2">
+                  <span class="ip-label">ثانویه:</span>
+                  <span class="ip-value">185.51.200.2</span>
+                  <button class="copy-btn" title="کپی">📋</button>
+                </div>
+              </div>
+              <div class="dns-server-description">DNS رایگان برای دور زدن فیلترینگ</div>
+            </div>
+
+            <div class="dns-server-card" data-provider="شکن پرو" data-primary="178.22.122.101" data-secondary="185.51.200.1">
+              <div class="dns-server-header">
+                <div class="dns-server-icon">🔐</div>
+                <div class="dns-server-name">شکن پرو</div>
+                <div class="dns-server-status online">آنلاین</div>
+              </div>
+              <div class="dns-server-ips">
+                <div class="dns-ip primary" data-ip="178.22.122.101">
+                  <span class="ip-label">اصلی:</span>
+                  <span class="ip-value">178.22.122.101</span>
+                  <button class="copy-btn" title="کپی">📋</button>
+                </div>
+                <div class="dns-ip secondary" data-ip="185.51.200.1">
+                  <span class="ip-label">ثانویه:</span>
+                  <span class="ip-value">185.51.200.1</span>
+                  <button class="copy-btn" title="کپی">📋</button>
+                </div>
+              </div>
+              <div class="dns-server-description">DNS پریمیوم با سرعت بالا</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -131,17 +282,176 @@
       const titleEl = document.getElementById('dnsModalTitle');
       const bodyEl = document.getElementById('dnsModalBody');
       const closeEl = document.getElementById('dnsModalClose');
-      document.querySelectorAll('.article-card').forEach(card => {
-        card.addEventListener('click', () => {
-          titleEl.textContent = card.getAttribute('data-title') || 'DNS Info';
-          const content = (card.getAttribute('data-content') || '').replace(/\n/g, '<br>');
-          bodyEl.innerHTML = content;
-          modal.classList.add('active');
+
+      // 1) Load DNS articles dynamically from JSON
+      const articlesContainer = document.getElementById('dnsArticles');
+      if (articlesContainer) {
+        fetch('../Articles/dns.json', { cache: 'no-cache' })
+          .then(r => r.ok ? r.json() : [])
+          .then(list => {
+            if (!Array.isArray(list)) return;
+            const frag = document.createDocumentFragment();
+
+            list.forEach(item => {
+              const card = document.createElement('div');
+              card.className = 'glass-card article-card';
+              // Make article open the DNS modal on click (for now)
+              card.setAttribute('data-modal', 'dns-servers');
+
+              // Robust cover resolution: try several locations
+              const name = (item.cover || '').split('/').pop() || '';
+              const candidates = [];
+              if (item.cover && item.cover.trim()) {
+                // as provided
+                candidates.push(item.cover.trim());
+                // common alternates
+                candidates.push(`cover/${name}`);
+                candidates.push(`covers/${name}`);
+                candidates.push(`../Articles/covers/${name}`);
+              }
+              candidates.push('../icons/dns.png');
+              card.innerHTML = `
+                <div class="article-cover"><img alt="${item.title || ''}" data-role="cover-img"/></div>
+                <div class="article-title">${item.title || ''}</div>
+                <div class="article-summary">${item.summary || ''}</div>
+              `;
+
+              const img = card.querySelector('img[data-role="cover-img"]');
+              if (img) {
+                let idx = 0;
+                const tryNext = () => {
+                  if (idx >= candidates.length) return;
+                  const src = candidates[idx++];
+                  img.onerror = tryNext;
+                  img.src = src;
+                };
+                tryNext();
+              }
+
+              frag.appendChild(card);
+            });
+
+            articlesContainer.replaceChildren(frag);
+          })
+          .catch(() => {
+            // Fallback: show nothing on error
+          });
+      }
+
+      // 2) Only open modal for cards that explicitly opt-in via data-modal
+      function bindArticleClicks(){
+        document.querySelectorAll('.article-card').forEach(card => {
+          card.addEventListener('click', () => {
+            if (card.hasAttribute('data-modal')) {
+              modal.classList.add('active');
+              setTimeout(() => { initializeCopyButtons(); }, 100);
+            }
+          });
         });
-      });
+      }
+      // Bind initially and after possible dynamic render
+      bindArticleClicks();
+      const observer = new MutationObserver(() => bindArticleClicks());
+      const articlesWrap = document.querySelector('.articles-grid');
+      if (articlesWrap) observer.observe(articlesWrap, { childList: true, subtree: true });
+
+      // (Replaced by bindArticleClicks)
+
+      // Copy IP address functionality
+      function initializeCopyButtons() {
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+          // Remove existing listeners
+          btn.replaceWith(btn.cloneNode(true));
+        });
+        
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const ipElement = btn.parentElement;
+            const ip = ipElement.getAttribute('data-ip');
+            
+            try {
+              await navigator.clipboard.writeText(ip);
+              
+              // Visual feedback
+              const originalText = btn.textContent;
+              btn.textContent = '✅';
+              btn.style.background = '#4CAF50';
+              
+              setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+              }, 1500);
+              
+              // Show toast notification
+              showToast(`IP ${ip} کپی شد!`);
+            } catch (err) {
+              // Fallback for older browsers
+              const textArea = document.createElement('textarea');
+              textArea.value = ip;
+              document.body.appendChild(textArea);
+              textArea.select();
+              document.execCommand('copy');
+              document.body.removeChild(textArea);
+              
+              showToast(`IP ${ip} کپی شد!`);
+            }
+          });
+        });
+      }
+
+      // Toast notification function
+      function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        toast.textContent = message;
+        toast.style.cssText = `
+          position: fixed;
+          top: 100px;
+          right: 20px;
+          background: rgba(0, 0, 0, 0.9);
+          color: white;
+          padding: 12px 20px;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          backdrop-filter: blur(10px);
+          z-index: 10001;
+          font-family: 'DanaFaNum', sans-serif;
+          font-size: 14px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+          animation: slideInRight 0.3s ease;
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.style.animation = 'slideOutRight 0.3s ease';
+          setTimeout(() => {
+            if (document.body.contains(toast)) {
+              document.body.removeChild(toast);
+            }
+          }, 300);
+        }, 2000);
+      }
+
+      // Close modal functionality
       function closeModal(){ modal.classList.remove('active'); }
       closeEl.addEventListener('click', closeModal);
       modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+      // Add CSS animations for toast
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideInRight {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+          from { transform: translateX(0); opacity: 1; }
+          to { transform: translateX(100%); opacity: 0; }
+        }
+      `;
+      document.head.appendChild(style);
     })();
   </script>
 </body>

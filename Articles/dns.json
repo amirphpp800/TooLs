@@ -1,0 +1,9 @@
+[
+  {
+    "id": "server-tunneling",
+    "title": "تونلینگ سرور (Server Tunneling)",
+    "summary": "راهنمای راه‌اندازی و نکات مهم برای تونل کردن ترافیک سرور.",
+    "cover": "../Articles/covers/server-tunneling.png",
+    "category": "dns"
+  }
+]
