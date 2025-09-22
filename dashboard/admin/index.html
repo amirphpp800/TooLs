@@ -1,0 +1,209 @@
+          <!-- Post Wizard -->
+          <div id="view-post" class="view" role="region" aria-label="پست جدید" hidden>
+            <div class="toolbar">
+              <div class="group"><strong>ساخت پست جدید (ساده برای افراد غیر فنی)</strong></div>
+              <div class="group"><button type="button" id="btn-post-generate-key" class="btn">تولید کلید</button></div>
+            </div>
+            <form id="post-form" class="form form-grid">
+              <label class="form-field">
+                <span>عنوان</span>
+                <input type="text" id="post-title" placeholder="مثلاً: راه‌اندازی DNS سریع" />
+              </label>
+              <label class="form-field">
+                <span>کاور (URL)</span>
+                <input type="url" id="post-cover" placeholder="/Articles/covers/cover.jpg" />
+              </label>
+              <label class="form-field" style="grid-column:1/-1;">
+                <span>خلاصه کوتاه</span>
+                <input type="text" id="post-summary" placeholder="چند خط درباره این پست" />
+              </label>
+              <label class="form-field" style="grid-column:1/-1;">
+                <span>برچسب‌ها (با ویرگول جدا کنید)</span>
+                <input type="text" id="post-tags" placeholder="dns, راهنما, آموزش" />
+              </label>
+              <label class="form-field" style="grid-column:1/-1;">
+                <span>متن کامل</span>
+                <textarea id="post-body" placeholder="متن پست..." style="min-height:220px;"></textarea>
+              </label>
+              <label class="form-field" style="grid-column:1/-1;">
+                <span>کلید ذخیره (KV)</span>
+                <input type="text" id="post-key" placeholder="articles/YYYY/MM/slug.json" />
+              </label>
+              <div class="actions" style="grid-column:1/-1;">
+                <button type="button" id="btn-post-preview" class="btn">پیش‌نمایش</button>
+                <button type="button" id="btn-post-save-kv" class="btn btn-primary">ذخیره در KV</button>
+                <button type="button" id="btn-post-draft-save" class="btn">ذخیره پیش‌نویس محلی</button>
+                <button type="button" id="btn-post-draft-load" class="btn">بارگذاری پیش‌نویس</button>
+                <button type="button" id="btn-post-draft-clear" class="btn btn-danger">پاک‌کردن پیش‌نویس</button>
+              </div>
+            </form>
+            <div id="post-preview" class="card" style="margin-top:12px; display:none;">
+              <h3 class="card-title">پیش‌نمایش</h3>
+              <div id="post-preview-content" class="about-text"></div>
+            </div>
+          </div>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>پنل مدیریت | Pro TooLs</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="admin-header">
+      <div class="brand"><span lang="en">Pro TooLs</span> | پنل مدیریت</div>
+      <nav class="admin-nav">
+        <button id="btn-logout" class="btn btn-danger" hidden>خروج</button>
+      </nav>
+    </header>
+
+    <main class="admin-main">
+      <!-- Login Card (minimal) -->
+      <section id="login-section" class="card" aria-label="ورود مدیر">
+        <div class="login-hero">
+          <h1 class="card-title">ورود مدیر</h1>
+        </div>
+        <form id="login-form" class="form">
+          <label class="form-field">
+            <span>نام کاربری</span>
+            <input type="text" name="username" required autocomplete="username" />
+          </label>
+          <label class="form-field">
+            <span>رمز عبور</span>
+            <input type="password" name="password" required autocomplete="current-password" />
+          </label>
+          <button type="submit" class="btn btn-primary" style="width:100%">ورود</button>
+        </form>
+      </section>
+
+      <!-- Dashboard -->
+      <section id="dashboard-section" class="dashboard" hidden>
+        <aside class="sidebar">
+          <button class="sidebar-link active" data-view="kv">مدیریت محتوا (KV)</button>
+          <button class="sidebar-link" data-view="post">پست جدید</button>
+          <button class="sidebar-link" data-view="contacts">تماس‌ها</button>
+          <button class="sidebar-link" data-view="sponsors">اسپانسرها</button>
+          <button class="sidebar-link" data-view="pages">فایل‌های استاتیک (نمایش)</button>
+        </aside>
+
+        <section class="content">
+          <!-- KV Manager -->
+          <div id="view-kv" class="view" role="region" aria-label="مدیریت محتوا">
+            <div class="toolbar">
+              <div class="group">
+                <input id="prefix" class="input" placeholder="Prefix مثال: articles/ یا pages/" />
+                <button id="btn-list" class="btn">لیست</button>
+              </div>
+              <div class="group">
+                <label for="template-select">تمپلیت:</label>
+                <select id="template-select" class="input">
+                  <option value="">— انتخاب تمپلیت —</option>
+                  <option value="article">محتوای مقاله (JSON)</option>
+                  <option value="page">صفحه استاتیک (HTML)</option>
+                  <option value="settings">تنظیمات (JSON)</option>
+                </select>
+                <button id="btn-apply-template" class="btn">اعمال تمپلیت</button>
+              </div>
+              <div class="group">
+                <input id="kv-key" class="input" placeholder="کلید (key)" />
+                <button id="btn-get" class="btn">دریافت</button>
+                <button id="btn-delete" class="btn btn-danger">حذف</button>
+              </div>
+            </div>
+
+            <div class="editor">
+              <textarea id="kv-value" placeholder='محتوا (JSON یا متن عادی). برای JSON از ساختار درست استفاده کنید.'></textarea>
+            </div>
+            <div class="actions">
+              <button id="btn-put" class="btn btn-primary">ذخیره/بروزرسانی</button>
+              <button id="btn-kv-draft-save" class="btn">ذخیره پیش‌نویس</button>
+              <button id="btn-kv-draft-load" class="btn">بارگذاری پیش‌نویس</button>
+              <button id="btn-kv-draft-clear" class="btn btn-danger">پاک‌کردن پیش‌نویس</button>
+            </div>
+
+            <div class="list" id="kv-list"></div>
+          </div>
+
+          <!-- Contacts Manager -->
+          <div id="view-contacts" class="view" role="region" aria-label="تماس‌ها" hidden>
+            <div class="toolbar">
+              <div class="group">
+                <strong>تماس با ما (تلگرام):</strong>
+              </div>
+            </div>
+            <form id="contacts-form" class="form form-grid">
+              <label class="form-field">
+                <span>عنوان ۱</span>
+                <input type="text" id="c1-label" placeholder="تماس با ما - Minimalcraft" />
+              </label>
+              <label class="form-field">
+                <span>لینک ۱</span>
+                <input type="url" id="c1-url" placeholder="https://t.me/Minimalcraft" />
+              </label>
+              <label class="form-field">
+                <span>عنوان ۲</span>
+                <input type="text" id="c2-label" placeholder="تماس با ما - NeoDebug" />
+              </label>
+              <label class="form-field">
+                <span>لینک ۲</span>
+                <input type="url" id="c2-url" placeholder="https://t.me/NeoDebug" />
+              </label>
+              <div class="actions">
+                <button type="button" id="btn-contacts-load" class="btn">دریافت</button>
+                <button type="button" id="btn-contacts-save" class="btn btn-primary">ذخیره</button>
+              </div>
+              <p class="form-hint">در KV با کلید <code>settings/contacts.json</code> ذخیره می‌شود.</p>
+            </form>
+          </div>
+
+          <!-- Sponsors Manager -->
+          <div id="view-sponsors" class="view" role="region" aria-label="اسپانسرها" hidden>
+            <div class="toolbar">
+              <div class="group"><strong>لیست اسپانسرها</strong></div>
+              <div class="group"><button type="button" id="btn-sp-add" class="btn">+ افزودن</button></div>
+            </div>
+            <div id="sponsors-list" class="list"></div>
+            <div class="actions">
+              <button type="button" id="btn-sp-load" class="btn">دریافت</button>
+              <button type="button" id="btn-sp-save" class="btn btn-primary">ذخیره همه</button>
+            </div>
+            <p class="form-hint">در KV با کلید <code>settings/sponsors.json</code> ذخیره می‌شود. هر مورد شامل name و url است.</p>
+          </div>
+
+          <!-- Static Pages (read-only helper) -->
+          <div id="view-pages" class="view" role="region" aria-label="فایل‌های استاتیک" hidden>
+            <p>این بخش تنها جهت نمایش ساختار فعلی سایت است. مدیریت اصلی از طریق KV انجام می‌شود.</p>
+            <ul class="tree">
+              <li>/index.html</li>
+              <li>/Pages/
+                <ul>
+                  <li>android/</li>
+                  <li>ios/</li>
+                  <li>windows/</li>
+                  <li>web-panel/</li>
+                  <li>python-panel.html</li>
+                </ul>
+              </li>
+              <li>/Articles/ (در صورت نیاز می‌توانید محتوا را در KV با prefix: articles/ نگهداری کنید)</li>
+            </ul>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <template id="tpl-item">
+    <div class="kv-item">
+      <div class="kv-key"></div>
+      <div class="kv-actions">
+        <button data-act="load" class="btn btn-xs">بازکردن</button>
+        <button data-act="remove" class="btn btn-xs btn-danger">حذف</button>
+      </div>
+    </div>
+  </template>
+
+  <script src="admin.js"></script>
+</body>
+</html>

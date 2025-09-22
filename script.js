@@ -467,6 +467,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Set current year in footer (if present)
+    const yearEl = document.getElementById('year');
+    if (yearEl) {
+        yearEl.textContent = new Date().getFullYear();
+    }
+
     // Final initialization message
     console.log(`
     ╔══════════════════════════════════════╗

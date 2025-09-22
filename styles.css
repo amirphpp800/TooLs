@@ -983,9 +983,22 @@ body {
 
 /* Footer */
 .footer {
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
     border-top: 1px solid var(--border);
     padding: 3rem 2rem 1rem;
+    position: relative;
+    isolation: isolate;
+}
+.footer::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: -10px;
+    height: 12px;
+    background: radial-gradient(120% 14px at 50% 100%, rgba(255,255,255,.22), rgba(255,255,255,0) 70%);
+    pointer-events: none;
 }
 
 .footer-content {
@@ -1007,6 +1020,15 @@ body {
 .footer-description {
     color: #cccccc;
     line-height: 1.6;
+}
+
+/* Footer admin button */
+.footer-cta { margin-top: 1rem; }
+.footer-admin-btn {
+    display: inline-block;
+    padding: 0.6rem 1rem;
+    border-radius: 10px;
+    font-weight: 700;
 }
 
 .footer-links {
@@ -1035,9 +1057,7 @@ body {
     transition: color 0.3s ease;
 }
 
-.footer-list a:hover {
-    color: var(--text);
-}
+.footer-list a:hover { color: var(--accent); }
 
 /* Quick access as compact, pill-like links */
 .footer-list.quick-access {
@@ -1074,12 +1094,60 @@ body {
     filter: drop-shadow(0 2px 6px rgba(0, 212, 255, 0.35));
 }
 
+/* Social links refined */
+.social-links li a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.04);
+}
+.social-links li a:hover {
+    background: rgba(var(--accent-rgb), 0.12);
+    border-color: rgba(var(--accent-rgb), 0.35);
+}
+
+/* Contact (Telegram) buttons in footer */
+.contact-links li a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.04);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+}
+.contact-links li a img[alt="Telegram"] {
+    width: 22px;
+    height: 22px;
+    margin-left: 0;
+    filter: drop-shadow(0 2px 6px rgba(0, 212, 255, 0.35));
+}
+.contact-links li a:hover {
+    background: rgba(38,164,227,0.12); /* Telegram brand tint */
+    border-color: rgba(38,164,227,0.35);
+    color: #26A4E3;
+}
+
 .footer-bottom {
     text-align: center;
     margin-top: 2rem;
     padding-top: 2rem;
     border-top: 1px solid var(--border);
-    color: #888888;
+    color: #9aa0a6;
+}
+
+/* Telegram brand hover (links to t.me) */
+.footer-list a[href*="t.me"]:hover {
+    color: #26A4E3;
+}
+
+/* Optional dotted separators for inline quick links when needed */
+.footer-list:not(.quick-access) li + li {
+    margin-top: 0.6rem;
 }
 
 /* Footer quick access improvements */
