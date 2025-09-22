@@ -72,6 +72,7 @@
   const loginForm = $('#login-form');
   const btnLogout = $('#btn-logout');
   const healthBox = $('#health');
+  const adminHeader = $('.admin-header');
 
   // Views
   const viewKV = $('#view-kv');
@@ -79,6 +80,9 @@
   const viewContacts = $('#view-contacts');
   const viewSponsors = $('#view-sponsors');
   const viewPost = $('#view-post');
+  const viewTemplates = $('#view-templates');
+  const viewFiles = $('#view-files');
+  
   $$('.sidebar-link').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       $$('.sidebar-link').forEach(b=>b.classList.remove('active'));
@@ -89,6 +93,8 @@
       if (viewContacts) viewContacts.hidden = v !== 'contacts';
       if (viewSponsors) viewSponsors.hidden = v !== 'sponsors';
       if (viewPost) viewPost.hidden = v !== 'post';
+      if (viewTemplates) viewTemplates.hidden = v !== 'templates';
+      if (viewFiles) viewFiles.hidden = v !== 'files';
     });
   });
 
@@ -100,6 +106,7 @@
   const btnDelete = $('#btn-delete');
   const btnPut = $('#btn-put');
   const kvList = $('#kv-list');
+  const kvValue = $('#kv-value');
   const templateSelect = $('#template-select');
   const btnApplyTemplate = $('#btn-apply-template');
   const btnKvDraftSave = $('#btn-kv-draft-save');
@@ -408,21 +415,250 @@
 
   btnLogout.addEventListener('click', async ()=>{
     try { await api.logout(); } catch {}
-    loginSection.hidden = false;
-    dashboardSection.hidden = true;
-    btnLogout.hidden = true;
+    showLoginOnly();
   });
 
   async function afterLogin(){
-    loginSection.hidden = true;
-    dashboardSection.hidden = false;
+    loginSection.style.display = 'none';
+    dashboardSection.classList.remove('hidden');
+    dashboardSection.style.display = 'grid';
     btnLogout.hidden = false;
+    if (adminHeader) adminHeader.style.display = 'flex';
     // preload list
     try { btnList.click(); } catch {}
   }
 
+  function showLoginOnly(){
+    loginSection.style.display = 'block';
+    dashboardSection.classList.add('hidden');
+    dashboardSection.style.display = 'none';
+    btnLogout.hidden = true;
+    if (adminHeader) adminHeader.style.display = 'none';
+  }
+
+  // Template Management
+  window.applyTemplate = function(templateType) {
+    const templates = {
+      article: {
+        key: `articles/${new Date().getFullYear()}/${String(new Date().getMonth()+1).padStart(2,'0')}/new-article.json`,
+        content: JSON.stringify({
+          title: "عنوان مقاله جدید",
+          cover: "/Articles/covers/default.jpg",
+          summary: "خلاصه کوتاه مقاله که در لیست نمایش داده می‌شود",
+          body: `# عنوان اصلی مقاله
+
+## مقدمه
+متن مقدمه شما اینجا قرار می‌گیرد.
+
+## محتوای اصلی
+محتوای اصلی مقاله را اینجا بنویسید.
+
+### نکات مهم
+- نکته اول
+- نکته دوم
+- نکته سوم
+
+## نتیجه‌گیری
+نتیجه‌گیری مقاله را اینجا بنویسید.`,
+          tags: ["آموزش", "راهنما"],
+          publishedAt: new Date().toISOString(),
+          author: "Pro TooLs",
+          status: "published"
+        }, null, 2)
+      },
+      news: {
+        key: `news/${new Date().getFullYear()}/${String(new Date().getMonth()+1).padStart(2,'0')}/news-${Date.now()}.json`,
+        content: JSON.stringify({
+          title: "عنوان خبر یا اطلاعیه",
+          summary: "خلاصه کوتاه خبر",
+          body: "متن کامل خبر یا اطلاعیه را اینجا بنویسید.",
+          type: "news",
+          priority: "normal",
+          publishedAt: new Date().toISOString(),
+          expiresAt: null
+        }, null, 2)
+      },
+      config: {
+        key: `configs/${Date.now()}.json`,
+        content: JSON.stringify({
+          name: "کانفیگ جدید",
+          type: "vpn",
+          description: "توضیحات کانفیگ",
+          config: "# کانفیگ شما اینجا\n",
+          instructions: "راهنمای استفاده از کانفیگ",
+          tags: ["vpn", "config"],
+          createdAt: new Date().toISOString()
+        }, null, 2)
+      },
+      download: {
+        key: `downloads/${Date.now()}.json`,
+        content: JSON.stringify({
+          title: "نام نرم‌افزار",
+          description: "توضیحات نرم‌افزار",
+          version: "1.0.0",
+          downloadUrl: "https://example.com/download",
+          fileSize: "10 MB",
+          requirements: "ویندوز 10 یا بالاتر",
+          screenshots: [],
+          features: ["ویژگی اول", "ویژگی دوم"],
+          publishedAt: new Date().toISOString()
+        }, null, 2)
+      }
+    };
+
+    const template = templates[templateType];
+    if (template && kvKey && kvValue) {
+      kvKey.value = template.key;
+      kvValue.value = template.content;
+      notify(`تمپلیت ${templateType} اعمال شد`, 'success');
+      
+      // Switch to KV view
+      const kvLink = document.querySelector('[data-view="kv"]');
+      if (kvLink) kvLink.click();
+    }
+  };
+
+  // File Management
+  const fileUpload = $('#file-upload');
+  const btnUpload = $('#btn-upload');
+  const uploadArea = $('#upload-area');
+  const filesList = $('#files-list');
+
+  if (btnUpload) {
+    btnUpload.addEventListener('click', () => {
+      fileUpload?.click();
+    });
+  }
+
+  if (uploadArea) {
+    uploadArea.addEventListener('click', () => {
+      fileUpload?.click();
+    });
+
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      const files = Array.from(e.dataTransfer.files);
+      handleFiles(files);
+    });
+  }
+
+  if (fileUpload) {
+    fileUpload.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      handleFiles(files);
+    });
+  }
+
+  function handleFiles(files) {
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target.result;
+        displayFile(file, content);
+      };
+      
+      if (file.type.startsWith('text/') || file.name.endsWith('.json') || file.name.endsWith('.html') || file.name.endsWith('.css') || file.name.endsWith('.js')) {
+        reader.readAsText(file);
+      } else {
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  function displayFile(file, content) {
+    if (!filesList) return;
+
+    const fileItem = document.createElement('div');
+    fileItem.className = 'file-item';
+    
+    const fileIcon = getFileIcon(file.type, file.name);
+    const fileSize = formatFileSize(file.size);
+    
+    fileItem.innerHTML = `
+      <div class="file-info">
+        <div class="file-icon">${fileIcon}</div>
+        <div class="file-details">
+          <h4>${file.name}</h4>
+          <small>${fileSize} • ${file.type || 'نامشخص'}</small>
+        </div>
+      </div>
+      <div class="file-actions">
+        <button class="btn btn-xs" onclick="useAsContent('${file.name}', \`${content.replace(/`/g, '\\`')}\`)">استفاده</button>
+        <button class="btn btn-xs btn-primary" onclick="saveToKV('${file.name}', \`${content.replace(/`/g, '\\`')}\`)">ذخیره در KV</button>
+      </div>
+    `;
+    
+    filesList.appendChild(fileItem);
+  }
+
+  function getFileIcon(type, name) {
+    if (type.startsWith('image/')) return '🖼️';
+    if (type.startsWith('text/') || name.endsWith('.txt')) return '📄';
+    if (name.endsWith('.json')) return '📋';
+    if (name.endsWith('.html')) return '🌐';
+    if (name.endsWith('.css')) return '🎨';
+    if (name.endsWith('.js')) return '⚡';
+    if (name.endsWith('.md')) return '📝';
+    return '📁';
+  }
+
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  window.useAsContent = function(fileName, content) {
+    if (kvValue) {
+      kvValue.value = content;
+      notify(`محتوای ${fileName} در ویرایشگر قرار گرفت`, 'success');
+      
+      // Switch to KV view
+      const kvLink = document.querySelector('[data-view="kv"]');
+      if (kvLink) kvLink.click();
+    }
+  };
+
+  window.saveToKV = async function(fileName, content) {
+    try {
+      const key = `uploads/${new Date().getFullYear()}/${String(new Date().getMonth()+1).padStart(2,'0')}/${fileName}`;
+      await api.put(key, content);
+      notify(`${fileName} در KV ذخیره شد`, 'success');
+    } catch(e) {
+      notify(`خطا در ذخیره ${fileName}`, 'error');
+    }
+  };
+
+  // Enhanced notification system
+  function showMessage(text, type = 'info') {
+    const message = document.createElement('div');
+    message.className = `message ${type}`;
+    message.textContent = text;
+    
+    const content = document.querySelector('.content');
+    if (content) {
+      content.insertBefore(message, content.firstChild);
+      setTimeout(() => message.remove(), 5000);
+    }
+  }
+
   // Check session on load
   (async function init(){
+    // Ensure login screen is shown initially
+    showLoginOnly();
+    
     // Fetch health
     try {
       // Get CSRF token for subsequent POSTs
@@ -455,7 +691,12 @@
 
     try {
       const me = await api.me();
-      if (me && me.authenticated) { afterLogin(); }
-    } catch {}
+      if (me && me.authenticated) { 
+        afterLogin(); 
+      }
+      // If not authenticated, login screen is already shown
+    } catch {
+      // Login screen is already shown
+    }
   })();
 })();

@@ -1,47 +1,3 @@
-          <!-- Post Wizard -->
-          <div id="view-post" class="view" role="region" aria-label="پست جدید" hidden>
-            <div class="toolbar">
-              <div class="group"><strong>ساخت پست جدید (ساده برای افراد غیر فنی)</strong></div>
-              <div class="group"><button type="button" id="btn-post-generate-key" class="btn">تولید کلید</button></div>
-            </div>
-            <form id="post-form" class="form form-grid">
-              <label class="form-field">
-                <span>عنوان</span>
-                <input type="text" id="post-title" placeholder="مثلاً: راه‌اندازی DNS سریع" />
-              </label>
-              <label class="form-field">
-                <span>کاور (URL)</span>
-                <input type="url" id="post-cover" placeholder="/Articles/covers/cover.jpg" />
-              </label>
-              <label class="form-field" style="grid-column:1/-1;">
-                <span>خلاصه کوتاه</span>
-                <input type="text" id="post-summary" placeholder="چند خط درباره این پست" />
-              </label>
-              <label class="form-field" style="grid-column:1/-1;">
-                <span>برچسب‌ها (با ویرگول جدا کنید)</span>
-                <input type="text" id="post-tags" placeholder="dns, راهنما, آموزش" />
-              </label>
-              <label class="form-field" style="grid-column:1/-1;">
-                <span>متن کامل</span>
-                <textarea id="post-body" placeholder="متن پست..." style="min-height:220px;"></textarea>
-              </label>
-              <label class="form-field" style="grid-column:1/-1;">
-                <span>کلید ذخیره (KV)</span>
-                <input type="text" id="post-key" placeholder="articles/YYYY/MM/slug.json" />
-              </label>
-              <div class="actions" style="grid-column:1/-1;">
-                <button type="button" id="btn-post-preview" class="btn">پیش‌نمایش</button>
-                <button type="button" id="btn-post-save-kv" class="btn btn-primary">ذخیره در KV</button>
-                <button type="button" id="btn-post-draft-save" class="btn">ذخیره پیش‌نویس محلی</button>
-                <button type="button" id="btn-post-draft-load" class="btn">بارگذاری پیش‌نویس</button>
-                <button type="button" id="btn-post-draft-clear" class="btn btn-danger">پاک‌کردن پیش‌نویس</button>
-              </div>
-            </form>
-            <div id="post-preview" class="card" style="margin-top:12px; display:none;">
-              <h3 class="card-title">پیش‌نمایش</h3>
-              <div id="post-preview-content" class="about-text"></div>
-            </div>
-          </div>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -55,34 +11,60 @@
     <header class="admin-header">
       <div class="brand"><span lang="en">Pro TooLs</span> | پنل مدیریت</div>
       <nav class="admin-nav">
+        <a href="/" class="btn btn-back">بازگشت به سایت</a>
         <button id="btn-logout" class="btn btn-danger" hidden>خروج</button>
       </nav>
     </header>
 
     <main class="admin-main">
-      <!-- Login Card (minimal) -->
-      <section id="login-section" class="card" aria-label="ورود مدیر">
-        <div class="login-hero">
-          <h1 class="card-title">ورود مدیر</h1>
+      <!-- Login Section -->
+      <section id="login-section" class="login-container">
+        <!-- Login Card -->
+        <div class="card login-card">
+          <div class="login-hero">
+            <h1 class="card-title">ورود مدیر</h1>
+            <p class="card-sub">برای دسترسی به پنل مدیریت وارد شوید</p>
+          </div>
+          <form id="login-form" class="form">
+            <label class="form-field">
+              <span>نام کاربری</span>
+              <input type="text" name="username" required autocomplete="username" />
+            </label>
+            <label class="form-field">
+              <span>رمز عبور</span>
+              <input type="password" name="password" required autocomplete="current-password" />
+            </label>
+            <button type="submit" class="btn btn-primary" style="width:100%">ورود</button>
+          </form>
         </div>
-        <form id="login-form" class="form">
-          <label class="form-field">
-            <span>نام کاربری</span>
-            <input type="text" name="username" required autocomplete="username" />
-          </label>
-          <label class="form-field">
-            <span>رمز عبور</span>
-            <input type="password" name="password" required autocomplete="current-password" />
-          </label>
-          <button type="submit" class="btn btn-primary" style="width:100%">ورود</button>
-        </form>
+
+        <!-- System Status Card -->
+        <div class="card status-card">
+          <h3 class="card-title">وضعیت سیستم</h3>
+          <div id="health" class="health">
+            <div class="health-item" data-key="kv">
+              <span class="health-label">پایگاه داده (KV):</span>
+              <span class="status">در حال بررسی...</span>
+            </div>
+            <div class="health-item" data-key="adminEnv">
+              <span class="health-label">تنظیمات مدیر:</span>
+              <span class="status">در حال بررسی...</span>
+            </div>
+            <div class="health-item" data-key="secret">
+              <span class="health-label">کلید امنیتی:</span>
+              <span class="status">در حال بررسی...</span>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- Dashboard -->
-      <section id="dashboard-section" class="dashboard" hidden>
+      <section id="dashboard-section" class="dashboard hidden" style="display: none;">
         <aside class="sidebar">
           <button class="sidebar-link active" data-view="kv">مدیریت محتوا (KV)</button>
           <button class="sidebar-link" data-view="post">پست جدید</button>
+          <button class="sidebar-link" data-view="templates">تمپلیت‌های آماده</button>
+          <button class="sidebar-link" data-view="files">مدیریت فایل</button>
           <button class="sidebar-link" data-view="contacts">تماس‌ها</button>
           <button class="sidebar-link" data-view="sponsors">اسپانسرها</button>
           <button class="sidebar-link" data-view="pages">فایل‌های استاتیک (نمایش)</button>
@@ -170,6 +152,110 @@
               <button type="button" id="btn-sp-save" class="btn btn-primary">ذخیره همه</button>
             </div>
             <p class="form-hint">در KV با کلید <code>settings/sponsors.json</code> ذخیره می‌شود. هر مورد شامل name و url است.</p>
+          </div>
+
+          <!-- Post Wizard -->
+          <div id="view-post" class="view" role="region" aria-label="پست جدید" hidden>
+            <div class="toolbar">
+              <div class="group"><strong>ساخت پست جدید (ساده برای افراد غیر فنی)</strong></div>
+              <div class="group"><button type="button" id="btn-post-generate-key" class="btn">تولید کلید</button></div>
+            </div>
+            <form id="post-form" class="form form-grid">
+              <label class="form-field">
+                <span>عنوان</span>
+                <input type="text" id="post-title" placeholder="مثلاً: راه‌اندازی DNS سریع" />
+              </label>
+              <label class="form-field">
+                <span>کاور (URL)</span>
+                <input type="url" id="post-cover" placeholder="/Articles/covers/cover.jpg" />
+              </label>
+              <label class="form-field" style="grid-column:1/-1;">
+                <span>خلاصه کوتاه</span>
+                <input type="text" id="post-summary" placeholder="چند خط درباره این پست" />
+              </label>
+              <label class="form-field" style="grid-column:1/-1;">
+                <span>برچسب‌ها (با ویرگول جدا کنید)</span>
+                <input type="text" id="post-tags" placeholder="dns, راهنما, آموزش" />
+              </label>
+              <label class="form-field" style="grid-column:1/-1;">
+                <span>متن کامل</span>
+                <textarea id="post-body" placeholder="متن پست..." style="min-height:220px;"></textarea>
+              </label>
+              <label class="form-field" style="grid-column:1/-1;">
+                <span>کلید ذخیره (KV)</span>
+                <input type="text" id="post-key" placeholder="articles/YYYY/MM/slug.json" />
+              </label>
+              <div class="actions" style="grid-column:1/-1;">
+                <button type="button" id="btn-post-preview" class="btn">پیش‌نمایش</button>
+                <button type="button" id="btn-post-save-kv" class="btn btn-primary">ذخیره در KV</button>
+                <button type="button" id="btn-post-draft-save" class="btn">ذخیره پیش‌نویس محلی</button>
+                <button type="button" id="btn-post-draft-load" class="btn">بارگذاری پیش‌نویس</button>
+                <button type="button" id="btn-post-draft-clear" class="btn btn-danger">پاک‌کردن پیش‌نویس</button>
+              </div>
+            </form>
+            <div id="post-preview" class="card" style="margin-top:12px; display:none;">
+              <h3 class="card-title">پیش‌نمایش</h3>
+              <div id="post-preview-content" class="about-text"></div>
+            </div>
+          </div>
+
+          <!-- Templates Manager -->
+          <div id="view-templates" class="view" role="region" aria-label="تمپلیت‌ها" hidden>
+            <div class="toolbar">
+              <div class="group"><strong>تمپلیت‌های آماده</strong></div>
+              <div class="group"><button type="button" id="btn-template-new" class="btn">+ تمپلیت جدید</button></div>
+            </div>
+            
+            <div class="templates-grid">
+              <div class="template-card" data-template="article">
+                <div class="template-icon">📄</div>
+                <h3>مقاله آموزشی</h3>
+                <p>برای نوشتن راهنما و آموزش‌های فنی</p>
+                <button class="btn btn-primary" onclick="applyTemplate('article')">استفاده</button>
+              </div>
+              
+              <div class="template-card" data-template="news">
+                <div class="template-icon">📰</div>
+                <h3>خبر و اطلاعیه</h3>
+                <p>برای انتشار اخبار و اطلاعیه‌ها</p>
+                <button class="btn btn-primary" onclick="applyTemplate('news')">استفاده</button>
+              </div>
+              
+              <div class="template-card" data-template="config">
+                <div class="template-icon">⚙️</div>
+                <h3>کانفیگ و تنظیمات</h3>
+                <p>برای اشتراک کانفیگ‌های VPN و تنظیمات</p>
+                <button class="btn btn-primary" onclick="applyTemplate('config')">استفاده</button>
+              </div>
+              
+              <div class="template-card" data-template="download">
+                <div class="template-icon">⬇️</div>
+                <h3>صفحه دانلود</h3>
+                <p>برای معرفی و دانلود نرم‌افزارها</p>
+                <button class="btn btn-primary" onclick="applyTemplate('download')">استفاده</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- File Manager -->
+          <div id="view-files" class="view" role="region" aria-label="مدیریت فایل" hidden>
+            <div class="toolbar">
+              <div class="group"><strong>مدیریت فایل‌ها</strong></div>
+              <div class="group">
+                <input type="file" id="file-upload" multiple style="display:none" />
+                <button type="button" id="btn-upload" class="btn">آپلود فایل</button>
+              </div>
+            </div>
+            
+            <div class="upload-area" id="upload-area">
+              <div class="upload-content">
+                <div class="upload-icon">📁</div>
+                <p>فایل‌ها را اینجا بکشید یا کلیک کنید</p>
+                <small>پشتیبانی از تصاویر، فایل‌های متنی و اسناد</small>
+              </div>
+            </div>
+            
+            <div class="files-list" id="files-list"></div>
           </div>
 
           <!-- Static Pages (read-only helper) -->
