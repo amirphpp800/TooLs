@@ -146,7 +146,7 @@ body {
 
 /* Header */
 .header {
-    position: fixed;
+    position: static;
     top: 0;
     width: 100%;
     background: rgba(var(--bg-rgb), 0.55);
@@ -824,6 +824,41 @@ body {
 
 @media (min-width: 1024px) {
     .articles-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Mobile adjustments: header height, and center/size cards */
+@media (max-width: 768px) {
+    /* Reduce header height on mobile */
+    .navbar {
+        padding: 0.4rem 5%;
+        min-height: 48px;
+    }
+    .nav-brand .logo {
+        font-size: 1.6rem;
+    }
+    .hamburger span {
+        width: 22px;
+    }
+
+    /* Center cards within grids on mobile */
+    .articles-grid,
+    .dns-servers-grid {
+        justify-items: center;
+    }
+
+    /* Constrain card width so they center nicely */
+    .article-card,
+    .dns-server-card {
+        width: 100%;
+        max-width: 380px;
+    }
+
+    /* Make article cover images responsive */
+    .article-cover img {
+        width: 100%;
+        height: auto;
+        max-width: 350px;
+    }
 }
 
 .section-title {
