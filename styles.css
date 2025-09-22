@@ -570,7 +570,8 @@ body {
 }
 
 .article-cover img {
-    width: 350px;
+    width: 100%;
+    max-width: 350px;
     height: 200px;
     object-fit: cover;
     object-position: center;
@@ -824,41 +825,6 @@ body {
 
 @media (min-width: 1024px) {
     .articles-grid { grid-template-columns: repeat(3, 1fr); }
-}
-
-/* Mobile adjustments: header height, and center/size cards */
-@media (max-width: 768px) {
-    /* Reduce header height on mobile */
-    .navbar {
-        padding: 0.4rem 5%;
-        min-height: 48px;
-    }
-    .nav-brand .logo {
-        font-size: 1.6rem;
-    }
-    .hamburger span {
-        width: 22px;
-    }
-
-    /* Center cards within grids on mobile */
-    .articles-grid,
-    .dns-servers-grid {
-        justify-items: center;
-    }
-
-    /* Constrain card width so they center nicely */
-    .article-card,
-    .dns-server-card {
-        width: 100%;
-        max-width: 380px;
-    }
-
-    /* Make article cover images responsive */
-    .article-cover img {
-        width: 100%;
-        height: auto;
-        max-width: 350px;
-    }
 }
 
 .section-title {
@@ -1211,8 +1177,8 @@ body {
 /* Responsive Design */
 @media (max-width: 768px) {
     .navbar {
-        padding: 0.5rem 3%;
-        min-height: 50px;
+        padding: 0.25rem 3%;
+        min-height: 42px;
     }
 
     .nav-menu {
@@ -1314,6 +1280,19 @@ body {
 
     .glass-card {
         padding: 1.5rem;
+    }
+
+    /* Center cards on mobile and limit width for better alignment */
+    .articles-grid,
+    .dns-servers-grid {
+        justify-items: center;
+    }
+
+    .article-card,
+    .dns-server-card {
+        width: 100%;
+        max-width: 520px;
+        margin-inline: auto;
     }
 
     .stats {
