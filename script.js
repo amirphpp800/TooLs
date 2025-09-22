@@ -187,6 +187,186 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // =====================
+    // Registration Flow UI
+    // =====================
+    const tgIdInput = document.getElementById('tgIdInput');
+    const startBtn = document.getElementById('startRegisterBtn');
+    const regStatus = document.getElementById('regStatus');
+    const step2Box = document.getElementById('registerStep2');
+    const botLink = document.getElementById('botLink');
+    const resendBtn = document.getElementById('resendCodeBtn');
+    const codeInput = document.getElementById('codeInput');
+    const verifyBtn = document.getElementById('verifyCodeBtn');
+    const verifyStatus = document.getElementById('verifyStatus');
+
+    function setText(el, text) {
+        if (el) el.textContent = text || '';
+    }
+
+    function isValidTgId(val) {
+        return /^[0-9]{5,15}$/.test(String(val || '').trim());
+    }
+
+    async function apiPost(path, payload) {
+        const res = await fetch(path, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json().catch(() => ({}));
+        return { ok: res.ok, status: res.status, data };
+    }
+
+    if (startBtn) {
+        startBtn.addEventListener('click', async () => {
+            const tgId = (tgIdInput?.value || '').trim();
+            if (!isValidTgId(tgId)) {
+                setText(regStatus, 'آیدی عددی معتبر وارد کنید.');
+                showNotification('آیدی عددی معتبر نیست', 'error');
+                return;
+            }
+            setText(regStatus, 'در حال ارسال کد به ربات تلگرام...');
+            startBtn.disabled = true;
+            try {
+                const { ok, data } = await apiPost('/api/register/start', { telegram_id: tgId });
+                if (!ok) {
+                    setText(regStatus, data?.error === 'RATE_LIMITED' ? 'محدودیت ارسال. بعدا تلاش کنید.' : 'خطا در شروع ثبت‌نام');
+                    showNotification('خطا در شروع ثبت‌نام', 'error');
+                    return;
+                }
+                // Save for later steps
+                localStorage.setItem('tg_numeric_id', tgId);
+                if (data?.bot_link && botLink) {
+                    botLink.href = data.bot_link;
+                }
+                setText(regStatus, 'اگر ربات را استارت نکرده‌اید، ابتدا ربات را استارت کنید سپس کد را وارد نمایید.');
+                if (step2Box) step2Box.style.display = 'block';
+                // Smooth scroll to step 2
+                step2Box?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (e) {
+                setText(regStatus, 'اشکال در ارتباط با سرور');
+            } finally {
+                startBtn.disabled = false;
+            }
+        });
+    }
+
+    if (resendBtn) {
+        resendBtn.addEventListener('click', async () => {
+            const tgId = localStorage.getItem('tg_numeric_id') || (tgIdInput?.value || '').trim();
+            if (!isValidTgId(tgId)) {
+                showNotification('ابتدا آیدی عددی معتبر وارد کنید.', 'error');
+                return;
+            }
+            resendBtn.disabled = true;
+            setText(verifyStatus, 'در حال ارسال مجدد کد...');
+            try {
+                const { ok } = await apiPost('/api/register/resend', { telegram_id: tgId });
+                if (ok) {
+                    showNotification('کد مجددا ارسال شد.', 'success');
+                    setText(verifyStatus, 'کد مجددا ارسال شد. لطفاً تلگرام را بررسی کنید.');
+                } else {
+                    showNotification('خطا در ارسال مجدد کد', 'error');
+                    setText(verifyStatus, 'خطا در ارسال مجدد کد');
+                }
+            } finally {
+                resendBtn.disabled = false;
+            }
+        });
+    }
+
+    if (verifyBtn) {
+        verifyBtn.addEventListener('click', async () => {
+            const tgId = localStorage.getItem('tg_numeric_id') || (tgIdInput?.value || '').trim();
+            const code = (codeInput?.value || '').trim();
+            if (!isValidTgId(tgId)) {
+                showNotification('آیدی عددی صحیح نیست', 'error');
+                return;
+            }
+            if (!/^\d{4}$/.test(code)) {
+                showNotification('کد ۴ رقمی معتبر وارد کنید', 'error');
+                return;
+            }
+            verifyBtn.disabled = true;
+            setText(verifyStatus, 'در حال تایید...');
+            try {
+                const { ok, data } = await apiPost('/api/register/verify', { telegram_id: tgId, code });
+                if (ok && data?.status === 'VERIFIED') {
+                    showNotification('ثبت‌نام با موفقیت انجام شد', 'success');
+                    setText(verifyStatus, 'حساب شما تایید و ساخته شد.');
+                } else {
+                    const msg = data?.error === 'CODE_MISMATCH' ? 'کد نادرست است' : (data?.error || 'خطا در تایید');
+                    showNotification(msg, 'error');
+                    setText(verifyStatus, msg);
+                }
+            } catch (e) {
+                showNotification('اشکال در ارتباط با سرور', 'error');
+                setText(verifyStatus, 'اشکال در ارتباط با سرور');
+            } finally {
+                verifyBtn.disabled = false;
+            }
+        });
+    }
+
+    // =====================
+    // Auth gating for site actions
+    // =====================
+    let AUTH = { authenticated: false, checked: false };
+    async function refreshAuth() {
+        try {
+            const res = await fetch('/api/auth/status', { credentials: 'include' });
+            const data = await res.json().catch(() => ({}));
+            AUTH = { authenticated: Boolean(data?.authenticated), checked: true, user: data?.user || null };
+        } catch {
+            AUTH = { authenticated: false, checked: true };
+        }
+    }
+    // Fire and forget on load
+    refreshAuth();
+
+    function guardOrScrollToRegister(e) {
+        if (!AUTH.authenticated) {
+            if (e && typeof e.preventDefault === 'function') e.preventDefault();
+            const reg = document.getElementById('register');
+            if (reg) reg.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            showNotification('برای ادامه ابتدا ثبت‌نام کنید.', 'error');
+            return true;
+        }
+        return false;
+    }
+
+    // Intercept internal navigation clicks (anchors)
+    document.addEventListener('click', (e) => {
+        const a = e.target.closest('a');
+        if (!a) return;
+        const href = a.getAttribute('href') || '';
+        // Allow clicking the register anchor explicitly
+        if (href.startsWith('#register')) return;
+        // Allow external links and protocols
+        if (/^https?:\/\//i.test(href) || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+        // Normalize internal URL
+        try {
+            const url = new URL(href, location.href);
+            if (url.origin === location.origin) {
+                // Allow scrolling to in-page anchors on the same page (home/register already handled)
+                if (href.startsWith('#')) return;
+                guardOrScrollToRegister(e);
+            }
+        } catch {
+            // If URL parsing fails, guard conservatively
+            guardOrScrollToRegister(e);
+        }
+    }, true);
+
+    // Intercept article card opens
+    document.addEventListener('click', (e) => {
+        const card = e.target.closest('.article-card');
+        if (card) {
+            guardOrScrollToRegister(e);
+        }
+    }, true);
+
     window.addEventListener('scroll', updateActiveNavLink);
 
     // Animate hero elements on load
