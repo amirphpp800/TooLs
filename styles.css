@@ -71,6 +71,18 @@ body {
     text-align: right;
 }
 
+/* Apply font globally to all elements to ensure consistency */
+* {
+    font-family: 'DanaFaNum', 'Tahoma', 'Arial', sans-serif;
+}
+
+/* Global responsive images */
+img {
+    max-width: 100%;
+    height: auto;
+    display: inline-block;
+}
+
 /* Loading Screen */
 .loading-screen {
     position: fixed;
@@ -175,7 +187,7 @@ body {
     height: 3px;
     z-index: 1200;
     pointer-events: none;
-    display: none;
+    display: block;
 }
 .scroll-progress span {
     display: block;
@@ -189,7 +201,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 5%;
+    padding: 1rem 3%; /* shift content slightly closer to right edge in RTL */
     max-width: 1200px;
     margin: 0 auto;
     min-height: 70px;
@@ -382,7 +394,7 @@ body {
 /* Hero Section */
 .hero {
     position: relative;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -533,6 +545,24 @@ body {
 .section {
     padding: 6rem 2rem;
     min-height: 100vh;
+}
+
+/* Register section: tighter bottom spacing to reduce gap before footer */
+#register.section {
+    min-height: auto;
+    padding-top: 4rem;
+    padding-bottom: 2.5rem;
+}
+
+/* Auth modal form responsiveness */
+#authModal .form-row {
+    flex-wrap: wrap;
+}
+#authModal .form-row .input {
+    min-width: 220px;
+}
+#authModal .form-row .btn {
+    min-width: 140px;
 }
 
 .container {
@@ -1212,6 +1242,9 @@ body {
         min-height: 50px;
     }
 
+    /* Hide elements explicitly flagged for mobile */
+    .hide-mobile { display: none !important; }
+
     .nav-menu {
         display: none;
         position: absolute;
@@ -1313,6 +1346,18 @@ body {
 
     .glass-card {
         padding: 1.5rem;
+    }
+
+    /* Stack inputs and buttons in auth modal on small screens */
+    #authModal .form-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    #authModal .form-row .input,
+    #authModal .form-row .btn {
+        width: 100%;
+        max-width: 100%;
     }
 
     /* Center cards on mobile and limit width for better alignment */

@@ -119,7 +119,11 @@
                     <li>
                         <a href="#register" class="nav-link">
                             <span class="nav-icon" aria-hidden="true">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm-7 9a7 7 0 0114 0H5z" fill="currentColor"/></svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="ثبت‌نام">
+                                    <path d="M15 8a5 5 0 11-10 0 5 5 0 0110 0z" fill="currentColor"/>
+                                    <path d="M2 20a7 7 0 0114 0v1a1 1 0 01-1 1H3a1 1 0 01-1-1v-1z" fill="currentColor"/>
+                                    <path d="M19 7v-2a1 1 0 112 0v2h2a1 1 0 110 2h-2v2a1 1 0 11-2 0V9h-2a1 1 0 110-2h2z" fill="currentColor"/>
+                                </svg>
                             </span>
                             <span>ثبت‌نام</span>
                         </a>
@@ -155,42 +159,56 @@
             </div>
         </section>
         
-        <!-- Register Section -->
+        <!-- Register Section as CTA -->
         <section id="register" class="section">
             <div class="container">
                 <div class="section-header">
-                    <h2 class="section-title">ثبت‌نام</h2>
-                    <p class="section-subtitle">برای ساخت حساب، فقط با آیدی عددی تلگرام خود ثبت‌نام کنید.</p>
+                    <h2 class="section-title">ثبت‌نام و ورود</h2>
+                    <p class="section-subtitle">با آیدی عددی تلگرام وارد شوید؛ اگر حساب دارید وارد شوید و در غیر اینصورت ثبت‌نام کنید.</p>
                 </div>
 
-                <div class="glass-card" style="max-width: 720px; margin: 0 auto;">
-                    <div class="card-title">مرحله ۱: وارد کردن آیدی عددی تلگرام</div>
-                    <div class="card-description">آیدی عددی تلگرام خود را وارد کنید. فقط اعداد را بدون @ وارد نمایید.</div>
-                    <div class="form-row" style="display:flex; gap:12px; align-items:center;">
-                        <input id="tgIdInput" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="مثال: 123456789" class="input" style="flex:1;" />
-                        <button id="startRegisterBtn" class="btn btn-primary">ادامه</button>
-                    </div>
-                    <div id="regStatus" class="card-description" style="margin-top:10px;"></div>
-                </div>
-
-                <div id="registerStep2" class="glass-card" style="max-width: 720px; margin: 16px auto 0; display:none;">
-                    <div class="card-title">مرحله ۲: ربات را استارت کنید و کد را وارد نمایید</div>
-                    <div class="card-description">
-                        لطفاً ربات زیر را استارت کنید تا کد ۴ رقمی برای شما ارسال شود.
-                    </div>
-                    <div class="form-row" style="display:flex; gap:12px; align-items:center; flex-wrap: wrap;">
-                        <a id="botLink" href="https://t.me/protoolsverify_bot" target="_blank" rel="noopener" class="btn btn-outline">رفتن به ربات</a>
-                        <button id="resendCodeBtn" class="btn btn-secondary">ارسال مجدد کد</button>
-                    </div>
-                    <div class="card-description" style="margin-top: 14px;">کد ۴ رقمی دریافت‌شده را وارد کنید:</div>
-                    <div class="form-row" style="display:flex; gap:12px; align-items:center;">
-                        <input id="codeInput" type="text" inputmode="numeric" pattern="\d{4}" maxlength="4" placeholder="مثال: 1234" class="input" style="max-width:200px;" />
-                        <button id="verifyCodeBtn" class="btn btn-primary">تایید</button>
-                    </div>
-                    <div id="verifyStatus" class="card-description" style="margin-top:10px;"></div>
+                <div class="glass-card" style="max-width: 720px; margin: 0 auto; text-align:center;">
+                    <div class="card-description" style="margin-bottom:1rem;">برای ادامه روی دکمه زیر کلیک کنید.</div>
+                    <button id="openAuthModalBtn" class="btn btn-primary">ثبت‌نام و ورود</button>
+                    <div class="card-description" id="regStatus" style="margin-top:12px;"></div>
                 </div>
             </div>
         </section>
+
+        <!-- Auth Modal (Register/Login + GOLD activation) -->
+        <div id="authModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="authModalTitle" style="display:none;">
+            <div class="modal" style="max-width:720px;">
+                <div class="modal-header">
+                    <h3 id="authModalTitle">ثبت‌نام و ورود</h3>
+                    <button class="modal-close" id="closeAuthModalBtn" aria-label="بستن">✖</button>
+                </div>
+                <div class="modal-body">
+                    <div id="view-auth">
+                        <div class="card-title">مرحله ۱: آیدی عددی تلگرام</div>
+                        <div class="card-description">آیدی عددی تلگرام خود را وارد کنید (فقط اعداد بدون @).</div>
+                        <div class="form-row" style="display:flex; gap:12px; align-items:center;">
+                            <input id="tgIdInput" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="مثال: 123456789" class="input" style="flex:1;" />
+                            <button id="startRegisterBtn" class="btn btn-primary">ادامه</button>
+                        </div>
+
+                        <div id="registerStep2" style="margin-top:16px; display:none;">
+                            <div class="card-title">مرحله ۲: دریافت و ورود کد</div>
+                            <div class="card-description">ربات را استارت کنید تا کد ۴ رقمی برای شما ارسال شود.</div>
+                            <div class="form-row" style="display:flex; gap:12px; align-items:center; flex-wrap: wrap;">
+                                <a id="botLink" href="https://t.me/protoolsverify_bot" target="_blank" rel="noopener" class="btn btn-outline">رفتن به ربات</a>
+                                <button id="resendCodeBtn" class="btn btn-secondary">ارسال مجدد کد</button>
+                            </div>
+                            <div class="card-description" style="margin-top: 14px;">کد ۴ رقمی را وارد کنید:</div>
+                            <div class="form-row" style="display:flex; gap:12px; align-items:center;">
+                                <input id="codeInput" type="text" inputmode="numeric" pattern="\d{4}" maxlength="4" placeholder="مثال: 1234" class="input" style="max-width:200px;" />
+                                <button id="verifyCodeBtn" class="btn btn-primary">تایید</button>
+                            </div>
+                            <div id="verifyStatus" class="card-description" style="margin-top:10px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Footer -->
         <footer class="footer">

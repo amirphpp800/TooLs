@@ -74,29 +74,44 @@ document.addEventListener('DOMContentLoaded', function() {
         const menu = dropdown.querySelector('.dropdown-menu');
 
         if (toggle && menu) {
+            // Accessibility: declare semantics
+            toggle.setAttribute('aria-haspopup', 'true');
+            toggle.setAttribute('aria-expanded', 'false');
+            if (menu.id) {
+                toggle.setAttribute('aria-controls', menu.id);
+            }
             // Desktop hover functionality
             dropdown.addEventListener('mouseenter', () => {
                 if (window.innerWidth > 768) {
                     dropdown.classList.add('active');
+                    toggle.setAttribute('aria-expanded', 'true');
                 }
             });
 
             dropdown.addEventListener('mouseleave', () => {
                 if (window.innerWidth > 768) {
                     dropdown.classList.remove('active');
+                    toggle.setAttribute('aria-expanded', 'false');
                 }
             });
 
             // Mobile click functionality
             toggle.addEventListener('click', (e) => {
-                if (window.innerWidth <= 768) {
+                // Prevent page jump on # even on desktop
+                const href = toggle.getAttribute('href');
+                if (href === '#') {
                     e.preventDefault();
+                }
+                if (window.innerWidth <= 768) {
                     dropdown.classList.toggle('active');
+                    toggle.setAttribute('aria-expanded', dropdown.classList.contains('active') ? 'true' : 'false');
 
                     // Close other dropdowns
                     dropdowns.forEach(otherDropdown => {
                         if (otherDropdown !== dropdown) {
                             otherDropdown.classList.remove('active');
+                            const otherToggle = otherDropdown.querySelector('.dropdown-toggle');
+                            if (otherToggle) otherToggle.setAttribute('aria-expanded', 'false');
                         }
                     });
                 }
@@ -106,6 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.addEventListener('click', (e) => {
                 if (!dropdown.contains(e.target)) {
                     dropdown.classList.remove('active');
+                    toggle.setAttribute('aria-expanded', 'false');
                 }
             });
         }
@@ -218,6 +234,46 @@ document.addEventListener('DOMContentLoaded', function() {
         return { ok: res.ok, status: res.status, data };
     }
 
+    // Open/close auth modal and tab switching
+    const authModal = document.getElementById('authModal');
+    const openAuthModalBtn = document.getElementById('openAuthModalBtn');
+    const closeAuthModalBtn = document.getElementById('closeAuthModalBtn');
+    const tabAuth = document.getElementById('tab-auth');
+    const tabGold = document.getElementById('tab-gold');
+    const viewAuth = document.getElementById('view-auth');
+    const viewGold = document.getElementById('view-gold');
+
+    function openAuthModal() {
+        if (authModal) authModal.style.display = 'flex';
+    }
+    function closeAuthModal() {
+        if (authModal) authModal.style.display = 'none';
+    }
+    openAuthModalBtn?.addEventListener('click', openAuthModal);
+    closeAuthModalBtn?.addEventListener('click', closeAuthModal);
+    authModal?.addEventListener('click', (e) => {
+        if (e.target === authModal) closeAuthModal();
+    });
+
+    function switchTab(which) {
+        if (!tabAuth || !tabGold || !viewAuth || !viewGold) return;
+        if (which === 'gold') {
+            viewAuth.style.display = 'none';
+            viewGold.style.display = 'block';
+            tabGold.classList.add('btn-primary');
+            tabAuth.classList.remove('btn-primary');
+        } else {
+            viewAuth.style.display = 'block';
+            viewGold.style.display = 'none';
+            tabAuth.classList.add('btn-primary');
+            tabGold.classList.remove('btn-primary');
+        }
+    }
+    tabAuth?.addEventListener('click', () => switchTab('auth'));
+    tabGold?.addEventListener('click', () => switchTab('gold'));
+    // default
+    switchTab('auth');
+
     if (startBtn) {
         startBtn.addEventListener('click', async () => {
             const tgId = (tgIdInput?.value || '').trim();
@@ -295,6 +351,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (ok && data?.status === 'VERIFIED') {
                     showNotification('ثبت‌نام با موفقیت انجام شد', 'success');
                     setText(verifyStatus, 'حساب شما تایید و ساخته شد.');
+                    // Close modal and redirect to dashboard
+                    closeAuthModal();
+                    setTimeout(() => {
+                        window.location.href = '/dashboard/user/';
+                    }, 500);
                 } else {
                     const msg = data?.error === 'CODE_MISMATCH' ? 'کد نادرست است' : (data?.error || 'خطا در تایید');
                     showNotification(msg, 'error');
@@ -323,7 +384,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     // Fire and forget on load
-    refreshAuth();
+    refreshAuth().then(() => {
+        // Adapt navbar register link to 'داشبورد' when authenticated
+        try {
+            if (AUTH.authenticated) {
+                const regLink = document.querySelector('a.nav-link[href="#register"]');
+                if (regLink) {
+                    regLink.setAttribute('href', '/dashboard/user/');
+                    const spanText = regLink.querySelector('span:last-child');
+                    if (spanText) spanText.textContent = 'داشبورد';
+                }
+            }
+        } catch {}
+    });
 
     function guardOrScrollToRegister(e) {
         if (!AUTH.authenticated) {
@@ -351,6 +424,18 @@ document.addEventListener('DOMContentLoaded', function() {
             if (url.origin === location.origin) {
                 // Allow scrolling to in-page anchors on the same page (home/register already handled)
                 if (href.startsWith('#')) return;
+                // Allow only specific informational pages and admin without forcing registration
+                const p = url.pathname;
+                const infoPaths = new Set([
+                    '/',
+                    '/index.html',
+                    '/Pages/about.html',
+                    '/Pages/help.html',
+                    '/Pages/faq.html'
+                ]);
+                if (p.startsWith('/dashboard/admin/') || p === '/dashboard/admin' || infoPaths.has(p)) {
+                    return;
+                }
                 guardOrScrollToRegister(e);
             }
         } catch {

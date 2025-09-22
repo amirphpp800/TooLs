@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>داشبورد کاربری | Pro TooLs</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .user-dashboard { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+    .user-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+    .user-title { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
+    .plan-badge { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; border:1px solid var(--border); background: rgba(255,255,255,0.04); font-weight:700; }
+    .plan-free { color:#9aa0a6; }
+    .plan-gold { color:#ffd54f; border-color: rgba(255,213,79,.4); background: rgba(255,213,79,.08); }
+    .grid { display:grid; grid-template-columns: 2fr 1fr; gap:16px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    .card .muted { color: var(--text-muted); }
+    .favorites-empty { text-align:center; color: var(--text-muted); padding: 16px 0; }
+    .kv { font-family: ui-monospace, Menlo, Consolas, "Courier New", monospace; color: var(--text-muted); font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <div id="main" class="user-dashboard">
+    <div class="user-header">
+      <div>
+        <div class="user-title">داشبورد کاربری</div>
+        <div id="userMeta" class="muted">در حال بارگذاری...</div>
+      </div>
+      <div id="planBadge" class="plan-badge plan-free">طرح: رایگان</div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3 class="card-title">علاقه‌مندی‌ها</h3>
+        <div id="favorites" class="favorites-empty">موردی ثبت نشده است.</div>
+        <div class="muted" style="margin-top:8px">به‌زودی امکان ذخیره مقالات و کانفیگ‌های محبوب اضافه می‌شود.</div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">فعال‌سازی حساب طلایی</h3>
+        <p class="muted">اگر کد فعال‌سازی دارید، وارد کنید تا حسابتان به طلایی ارتقا یابد.</p>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input id="goldCode" class="input" placeholder="کد طلایی" />
+          <button id="btnActivateGold" class="btn btn-primary">فعال‌سازی</button>
+        </div>
+        <div id="goldMsg" class="muted" style="margin-top:8px"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h3 class="card-title">اطلاعات حساب</h3>
+      <pre id="rawUser" class="kv">{}</pre>
+      <div style="margin-top:8px"><a class="btn btn-secondary" href="/">بازگشت به سایت</a></div>
+    </div>
+  </div>
+
+  <script>
+    async function fetchAuth() {
+      try {
+        const res = await fetch('/api/auth/status', { credentials: 'include' });
+        const data = await res.json().catch(() => ({}));
+        return data;
+      } catch { return { authenticated: false }; }
+    }
+    function setPlanBadge(plan) {
+      const badge = document.getElementById('planBadge');
+      badge.classList.remove('plan-free','plan-gold');
+      if (plan === 'gold') {
+        badge.classList.add('plan-gold');
+        badge.textContent = 'طرح: طلایی';
+      } else {
+        badge.classList.add('plan-free');
+        badge.textContent = 'طرح: رایگان';
+      }
+    }
+    async function init() {
+      const a = await fetchAuth();
+      if (!a.authenticated || !a.user) {
+        window.location.href = '/';
+        return;
+      }
+      const u = a.user;
+      document.getElementById('userMeta').textContent = `شناسه تلگرام: ${u.telegram_id}`;
+      setPlanBadge(u.plan);
+      document.getElementById('rawUser').textContent = JSON.stringify(u, null, 2);
+    }
+    init();
+
+    document.getElementById('btnActivateGold').addEventListener('click', async () => {
+      const code = (document.getElementById('goldCode').value || '').trim();
+      const msg = document.getElementById('goldMsg');
+      if (!code) { msg.textContent = 'کد را وارد کنید.'; return; }
+      msg.textContent = 'در حال بررسی...';
+      try {
+        const res = await fetch('/api/account/upgrade', {
+          method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'include', body: JSON.stringify({ code })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.status === 'UPGRADED') {
+          msg.textContent = 'حساب طلایی فعال شد.';
+          setPlanBadge('gold');
+          document.getElementById('rawUser').textContent = JSON.stringify(data.user, null, 2);
+        } else {
+          msg.textContent = data.error === 'INVALID_CODE' ? 'کد نادرست است' : (data.error || 'خطا در فعال‌سازی');
+        }
+      } catch { msg.textContent = 'اشکال در ارتباط با سرور'; }
+    });
+  </script>
+</body>
+</html>
