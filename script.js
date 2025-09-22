@@ -433,11 +433,22 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const res = await fetch('/api/favorites', { credentials: 'include' });
             if (res.ok) {
-                userFavorites = await res.json();
-                updateFavoriteButtons();
+                const contentType = res.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    userFavorites = await res.json();
+                    updateFavoriteButtons();
+                } else {
+                    // Server returned non-JSON response (likely HTML error page)
+                    console.warn('سرور پاسخ غیر JSON برگرداند - احتمالاً API در دسترس نیست');
+                    userFavorites = [];
+                }
+            } else {
+                // API endpoint not available or user not authenticated
+                userFavorites = [];
             }
         } catch (e) {
             console.error('خطا در بارگذاری علاقه‌مندی‌ها:', e);
+            userFavorites = [];
         }
     }
 
@@ -487,9 +498,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 
                 if (res.ok) {
-                    const newFavorite = await res.json();
-                    userFavorites.push(newFavorite);
-                    showNotification('به علاقه‌مندی‌ها اضافه شد', 'success');
+                    const contentType = res.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const newFavorite = await res.json();
+                        userFavorites.push(newFavorite);
+                        showNotification('به علاقه‌مندی‌ها اضافه شد', 'success');
+                    } else {
+                        showNotification('سرور پاسخ نامعتبر داد', 'error');
+                    }
                 } else {
                     showNotification('خطا در اضافه کردن به علاقه‌مندی‌ها', 'error');
                 }
@@ -614,40 +630,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const favoriteBtn = document.createElement('button');
             favoriteBtn.className = 'favorite-btn';
             favoriteBtn.setAttribute('data-favorite-id', id);
-            favoriteBtn.style.cssText = `
-                position: absolute;
-                top: 12px;
-                left: 12px;
-                background: var(--surface-strong);
-                border: 1px solid var(--border);
-                border-radius: var(--radius-full);
-                width: 36px;
-                height: 36px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                transition: all var(--duration-normal) ease;
-                backdrop-filter: blur(10px);
-                z-index: 10;
-            `;
             
             favoriteBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 toggleFavorite(id, title, type, url);
-            });
-            
-            favoriteBtn.addEventListener('mouseenter', () => {
-                favoriteBtn.style.background = 'var(--surface-hover)';
-                favoriteBtn.style.borderColor = 'var(--accent)';
-                favoriteBtn.style.transform = 'scale(1.1)';
-            });
-            
-            favoriteBtn.addEventListener('mouseleave', () => {
-                favoriteBtn.style.background = 'var(--surface-strong)';
-                favoriteBtn.style.borderColor = 'var(--border)';
-                favoriteBtn.style.transform = 'scale(1)';
             });
             
             card.style.position = 'relative';

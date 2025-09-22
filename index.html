@@ -26,9 +26,11 @@
         <!-- Header -->
         <header class="header" role="banner">
             <nav class="navbar">
-                <div class="nav-brand">
-                    <a href="index.html" class="logo-link" aria-label="صفحه اصلی Pro TooLs"><h1 class="logo"><span lang="en">Pro TooLs</span></h1></a>
+                <div class="nav-actions" role="group" aria-label="ورود و حساب کاربری">
+                    <a id="headerDashboardLink" href="/dashboard/user/" class="btn btn-secondary hide" style="display:none;">حساب کاربری</a>
+                    <button id="openAuthModalHeaderBtn" class="btn btn-primary">ورود / ثبت‌نام</button>
                 </div>
+
                 <nav role="navigation" aria-label="منوی اصلی">
                 <ul id="nav-menu" class="nav-menu">
                     <li>
@@ -143,11 +145,6 @@
                     </li>
                 </ul>
                 </nav>
-
-                <div class="nav-actions" role="group" aria-label="ورود و حساب کاربری">
-                    <a id="headerDashboardLink" href="/dashboard/user/" class="btn btn-secondary hide" style="display:none;">حساب کاربری</a>
-                    <button id="openAuthModalHeaderBtn" class="btn btn-primary">ورود / ثبت‌نام</button>
-                </div>
 
                 <button class="hamburger" aria-label="منوی ناوبری" aria-expanded="false" aria-controls="nav-menu">
                     <span></span>
@@ -280,7 +277,7 @@
                 </div>
             </div>
         </footer>
-    </div>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
     <script src="script.js"></script>
