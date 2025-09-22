@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Skip Link for Accessibility -->
+    <a href="#main-content" class="skip-link">پرش به محتوای اصلی</a>
+    
     <!-- Loading Screen -->
     <div id="loading" class="loading-screen">
         <div class="loading-content">
@@ -19,14 +22,15 @@
     </div>
 
     <!-- Main Content -->
-    <div id="main-content" class="main-content hidden">
+    <main id="main-content" class="main-content hidden" role="main" aria-label="محتوای اصلی سایت">
         <!-- Header -->
-        <header class="header">
+        <header class="header" role="banner">
             <nav class="navbar">
                 <div class="nav-brand">
-                    <a href="index.html" class="logo-link"><h1 class="logo"><span lang="en">Pro TooLs</span></h1></a>
+                    <a href="index.html" class="logo-link" aria-label="صفحه اصلی Pro TooLs"><h1 class="logo"><span lang="en">Pro TooLs</span></h1></a>
                 </div>
-                <ul class="nav-menu">
+                <nav role="navigation" aria-label="منوی اصلی">
+                <ul id="nav-menu" class="nav-menu">
                     <li>
                         <a href="index.html" class="nav-link active">
                             <span class="nav-icon" aria-hidden="true">
@@ -43,20 +47,20 @@
                             <span>سیستم عامل</span>
                             <span class="dropdown-arrow">▼</span>
                         </a>
-                        <div class="dropdown-menu" id="osMenu">
-                            <a href="Pages/ios/" class="dropdown-item">
+                        <div class="dropdown-menu" id="osMenu" role="menu" aria-labelledby="osDropdown">
+                            <a href="Pages/ios/" class="dropdown-item" role="menuitem">
                                 <span class="item-icon" aria-hidden="true">
                                     <img src="icons/apple.svg" alt="Apple" />
                                 </span>
                                 آیفون
                             </a>
-                            <a href="Pages/android/" class="dropdown-item">
+                            <a href="Pages/android/" class="dropdown-item" role="menuitem">
                                 <span class="item-icon" aria-hidden="true">
                                     <img src="icons/android.svg" alt="Android" />
                                 </span>
                                 اندروید
                             </a>
-                            <a href="Pages/windows/" class="dropdown-item">
+                            <a href="Pages/windows/" class="dropdown-item" role="menuitem">
                                 <span class="item-icon" aria-hidden="true">
                                     <img src="icons/windows.svg" alt="Windows" />
                                 </span>
@@ -72,14 +76,14 @@
                             <span>پنل ها</span>
                             <span class="dropdown-arrow">▼</span>
                         </a>
-                        <div class="dropdown-menu" id="panelsMenu">
-                            <a href="Pages/web-panel/" class="dropdown-item">
+                        <div class="dropdown-menu" id="panelsMenu" role="menu" aria-labelledby="panelsDropdown">
+                            <a href="Pages/web-panel/" class="dropdown-item" role="menuitem">
                                 <span class="item-icon" aria-hidden="true">
                                     <img src="icons/html-5.svg" alt="HTML5" />
                                 </span>
                                 سایتی
                             </a>
-                            <a href="Pages/python-panel.html" class="dropdown-item">
+                            <a href="Pages/python-panel.html" class="dropdown-item" role="menuitem">
                                 <span class="item-icon" aria-hidden="true">
                                     <img src="icons/python.svg" alt="Python" />
                                 </span>
@@ -95,20 +99,20 @@
                             <span>سرور اختصاصی</span>
                             <span class="dropdown-arrow">▼</span>
                         </a>
-                        <div class="dropdown-menu" id="serversMenu">
-                            <a href="Pages/openvpn.html" class="dropdown-item">
+                        <div class="dropdown-menu" id="serversMenu" role="menu" aria-labelledby="serversDropdown">
+                            <a href="Pages/openvpn.html" class="dropdown-item" role="menuitem">
                                 <span class="item-icon" aria-hidden="true">
                                     <img src="icons/openvpn.svg" alt="OpenVPN" />
                                 </span>
                                 اوپن وی پی ان
                             </a>
-                            <a href="Pages/dns.html" class="dropdown-item">
+                            <a href="Pages/dns.html" class="dropdown-item" role="menuitem">
                                 <span class="item-icon" aria-hidden="true">
                                     <img src="icons/dns.png" alt="DNS" />
                                 </span>
                                 دی ان اس
                             </a>
-                            <a href="Pages/wireguard.html" class="dropdown-item">
+                            <a href="Pages/wireguard.html" class="dropdown-item" role="menuitem">
                                 <span class="item-icon" aria-hidden="true">
                                     <img src="icons/wireguard.svg" alt="WireGuard" />
                                 </span>
@@ -116,18 +120,7 @@
                             </a>
                         </div>
                     </li>
-                    <li>
-                        <a href="#register" class="nav-link">
-                            <span class="nav-icon" aria-hidden="true">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="ثبت‌نام">
-                                    <path d="M15 8a5 5 0 11-10 0 5 5 0 0110 0z" fill="currentColor"/>
-                                    <path d="M2 20a7 7 0 0114 0v1a1 1 0 01-1 1H3a1 1 0 01-1-1v-1z" fill="currentColor"/>
-                                    <path d="M19 7v-2a1 1 0 112 0v2h2a1 1 0 110 2h-2v2a1 1 0 11-2 0V9h-2a1 1 0 110-2h2z" fill="currentColor"/>
-                                </svg>
-                            </span>
-                            <span>ثبت‌نام</span>
-                        </a>
-                    </li>
+                    
                     <li>
                         <a href="Pages/about.html" class="nav-link">
                             <span class="nav-icon" aria-hidden="true">
@@ -136,21 +129,40 @@
                             <span>درباره ما</span>
                         </a>
                     </li>
+                    <li id="mobileAuthItem">
+                        <a id="mobileAuthLink" href="#register" class="nav-link">
+                            <span class="nav-icon" aria-hidden="true">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15 8a5 5 0 11-10 0 5 5 0 0110 0z" fill="currentColor"/>
+                                    <path d="M2 20a7 7 0 0114 0v1a1 1 0 01-1 1H3a1 1 0 01-1-1v-1z" fill="currentColor"/>
+                                    <path d="M19 7v-2a1 1 0 112 0v2h2a1 1 0 110 2h-2v2a1 1 0 11-2 0V9h-2a1 1 0 110-2h2z" fill="currentColor"/>
+                                </svg>
+                            </span>
+                            <span id="mobileAuthText">ورود / ثبت‌نام</span>
+                        </a>
+                    </li>
                 </ul>
-                <div class="hamburger">
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                </nav>
+
+                <div class="nav-actions" role="group" aria-label="ورود و حساب کاربری">
+                    <a id="headerDashboardLink" href="/dashboard/user/" class="btn btn-secondary hide" style="display:none;">حساب کاربری</a>
+                    <button id="openAuthModalHeaderBtn" class="btn btn-primary">ورود / ثبت‌نام</button>
                 </div>
+
+                <button class="hamburger" aria-label="منوی ناوبری" aria-expanded="false" aria-controls="nav-menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
             </nav>
         </header>
         <div class="scroll-progress" aria-hidden="true"><span></span></div>
 
         <!-- Hero Section -->
-        <section id="home" class="hero">
+        <section id="home" class="hero" role="banner" aria-labelledby="hero-title">
             <div id="tsparticles" aria-hidden="true"></div>
             <div class="hero-content">
-                <h1 class="hero-title"><span lang="en">Pro TooLs</span></h1>
+                <h1 id="hero-title" class="hero-title"><span lang="en">Pro TooLs</span></h1>
                 <p class="hero-subtitle">ابزارهای دیجیتال پیشرفته</p>
                 <p class="hero-description">
                     بیش از 2 سال تجربه در ارائه بهترین تنظیمات، کانفیگ‌ها و پنل‌های دیجیتال
@@ -160,16 +172,16 @@
         </section>
         
         <!-- Register Section as CTA -->
-        <section id="register" class="section">
+        <section id="register" class="section" role="region" aria-labelledby="register-title">
             <div class="container">
                 <div class="section-header">
-                    <h2 class="section-title">ثبت‌نام و ورود</h2>
+                    <h2 id="register-title" class="section-title">ثبت‌نام و ورود</h2>
                     <p class="section-subtitle">با آیدی عددی تلگرام وارد شوید؛ اگر حساب دارید وارد شوید و در غیر اینصورت ثبت‌نام کنید.</p>
                 </div>
 
                 <div class="glass-card" style="max-width: 720px; margin: 0 auto; text-align:center;">
                     <div class="card-description" style="margin-bottom:1rem;">برای ادامه روی دکمه زیر کلیک کنید.</div>
-                    <button id="openAuthModalBtn" class="btn btn-primary">ثبت‌نام و ورود</button>
+                    <button id="openAuthModalBtn" class="btn btn-primary" aria-describedby="regStatus">ثبت‌نام و ورود</button>
                     <div class="card-description" id="regStatus" style="margin-top:12px;"></div>
                 </div>
             </div>
@@ -204,6 +216,9 @@
                                 <button id="verifyCodeBtn" class="btn btn-primary">تایید</button>
                             </div>
                             <div id="verifyStatus" class="card-description" style="margin-top:10px;"></div>
+                            <div class="form-row" style="display:flex; gap:12px; align-items:center; justify-content:flex-end; margin-top:12px;">
+                                <button id="cancelAuthModalBtn" class="btn btn-secondary">انصراف</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -211,7 +226,7 @@
         </div>
 
         <!-- Footer -->
-        <footer class="footer">
+        <footer class="footer" role="contentinfo">
             <div class="container">
                 <div class="footer-content">
                     <div class="footer-brand">

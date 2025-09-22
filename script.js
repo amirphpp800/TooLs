@@ -152,31 +152,48 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Header scroll effect + progress bar
+    // Enhanced Header scroll effect + progress bar
     const header = document.querySelector('.header');
     const progressBar = document.querySelector('.scroll-progress span');
     let lastScrollTop = 0;
+    let ticking = false;
 
-    window.addEventListener('scroll', function() {
+    function updateHeader() {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
+        
+        // Add scrolled class for enhanced styling
         if (scrollTop > 100) {
-            header.style.background = 'rgba(15, 15, 15, 0.7)'; // matches --bg-rgb glass
-            header.style.backdropFilter = 'blur(26px) saturate(160%)';
+            header.classList.add('scrolled');
         } else {
-            header.style.background = 'rgba(15, 15, 15, 0.55)';
-            header.style.backdropFilter = 'blur(26px) saturate(160%)';
+            header.classList.remove('scrolled');
         }
 
-        // Scroll progress width
+        // Smooth scroll progress
         if (progressBar) {
             const docHeight = document.documentElement.scrollHeight - window.innerHeight;
             const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
             progressBar.style.width = progress + '%';
         }
 
+        // Parallax effect for hero elements
+        const heroContent = document.querySelector('.hero-content');
+        if (heroContent && scrollTop < window.innerHeight) {
+            const parallaxSpeed = scrollTop * 0.5;
+            heroContent.style.transform = `translateY(${parallaxSpeed}px)`;
+        }
+
         lastScrollTop = scrollTop;
-    });
+        ticking = false;
+    }
+
+    function requestTick() {
+        if (!ticking) {
+            requestAnimationFrame(updateHeader);
+            ticking = true;
+        }
+    }
+
+    window.addEventListener('scroll', requestTick, { passive: true });
 
     // Active navigation link highlighting
     function updateActiveNavLink() {
@@ -237,7 +254,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Open/close auth modal and tab switching
     const authModal = document.getElementById('authModal');
     const openAuthModalBtn = document.getElementById('openAuthModalBtn');
+    const openAuthModalHeaderBtn = document.getElementById('openAuthModalHeaderBtn');
     const closeAuthModalBtn = document.getElementById('closeAuthModalBtn');
+    const cancelAuthModalBtn = document.getElementById('cancelAuthModalBtn');
+    const headerDashboardLink = document.getElementById('headerDashboardLink');
     const tabAuth = document.getElementById('tab-auth');
     const tabGold = document.getElementById('tab-gold');
     const viewAuth = document.getElementById('view-auth');
@@ -250,7 +270,26 @@ document.addEventListener('DOMContentLoaded', function() {
         if (authModal) authModal.style.display = 'none';
     }
     openAuthModalBtn?.addEventListener('click', openAuthModal);
+    openAuthModalHeaderBtn?.addEventListener('click', openAuthModal);
     closeAuthModalBtn?.addEventListener('click', closeAuthModal);
+    cancelAuthModalBtn?.addEventListener('click', closeAuthModal);
+    
+    // Mobile auth link handler
+    const mobileAuthLink = document.getElementById('mobileAuthLink');
+    mobileAuthLink?.addEventListener('click', (e) => {
+        const href = mobileAuthLink.getAttribute('href');
+        if (href === '#register') {
+            e.preventDefault();
+            openAuthModal();
+            // Close mobile menu
+            const hamburger = document.querySelector('.hamburger');
+            const navMenu = document.querySelector('.nav-menu');
+            if (hamburger && navMenu) {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+            }
+        }
+    });
     authModal?.addEventListener('click', (e) => {
         if (e.target === authModal) closeAuthModal();
     });
@@ -371,18 +410,135 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // =====================
-    // Auth gating for site actions
+    // Enhanced Auth system with favorites
     // =====================
-    let AUTH = { authenticated: false, checked: false };
+    let AUTH = { authenticated: false, checked: false, user: null };
+    let userFavorites = [];
+
     async function refreshAuth() {
         try {
             const res = await fetch('/api/auth/status', { credentials: 'include' });
             const data = await res.json().catch(() => ({}));
             AUTH = { authenticated: Boolean(data?.authenticated), checked: true, user: data?.user || null };
+            
+            if (AUTH.authenticated) {
+                await loadUserFavorites();
+            }
         } catch {
-            AUTH = { authenticated: false, checked: true };
+            AUTH = { authenticated: false, checked: true, user: null };
         }
     }
+
+    async function loadUserFavorites() {
+        try {
+            const res = await fetch('/api/favorites', { credentials: 'include' });
+            if (res.ok) {
+                userFavorites = await res.json();
+                updateFavoriteButtons();
+            }
+        } catch (e) {
+            console.error('خطا در بارگذاری علاقه‌مندی‌ها:', e);
+        }
+    }
+
+    function updateFavoriteButtons() {
+        document.querySelectorAll('[data-favorite-id]').forEach(btn => {
+            const id = btn.getAttribute('data-favorite-id');
+            const isFavorite = userFavorites.some(fav => fav.id === id);
+            
+            btn.classList.toggle('favorited', isFavorite);
+            btn.innerHTML = isFavorite ? 
+                '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>' :
+                '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+            
+            btn.title = isFavorite ? 'حذف از علاقه‌مندی‌ها' : 'اضافه به علاقه‌مندی‌ها';
+        });
+    }
+
+    async function toggleFavorite(id, title, type, url) {
+        if (!AUTH.authenticated) {
+            showAuthRequiredModal();
+            return;
+        }
+
+        try {
+            const isFavorite = userFavorites.some(fav => fav.id === id);
+            
+            if (isFavorite) {
+                // حذف از علاقه‌مندی‌ها
+                const res = await fetch(`/api/favorites/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                
+                if (res.ok) {
+                    userFavorites = userFavorites.filter(fav => fav.id !== id);
+                    showNotification('از علاقه‌مندی‌ها حذف شد', 'success');
+                } else {
+                    showNotification('خطا در حذف از علاقه‌مندی‌ها', 'error');
+                }
+            } else {
+                // اضافه به علاقه‌مندی‌ها
+                const res = await fetch('/api/favorites', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ id, title, type, url })
+                });
+                
+                if (res.ok) {
+                    const newFavorite = await res.json();
+                    userFavorites.push(newFavorite);
+                    showNotification('به علاقه‌مندی‌ها اضافه شد', 'success');
+                } else {
+                    showNotification('خطا در اضافه کردن به علاقه‌مندی‌ها', 'error');
+                }
+            }
+            
+            updateFavoriteButtons();
+        } catch (e) {
+            showNotification('خطا در ارتباط با سرور', 'error');
+        }
+    }
+
+    function showAuthRequiredModal() {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'auth-required-modal';
+        wrapper.innerHTML = `
+            <div class="modal-backdrop" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+                <div class="modal" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 2rem; max-width: 400px; text-align: center;">
+                    <div style="margin-bottom: 1rem; font-size: 3rem;">🔒</div>
+                    <h3 style="color: var(--text); margin-bottom: 1rem;">ورود به حساب کاربری</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem; line-height: 1.6;">برای استفاده از این قابلیت ابتدا باید وارد حساب کاربری خود شوید.</p>
+                    <div style="display: flex; gap: 1rem; justify-content: center;">
+                        <button class="btn btn-primary" data-auth-required="confirm">ورود / ثبت‌نام</button>
+                        <button class="btn btn-secondary" data-auth-required="cancel">انصراف</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(wrapper);
+        
+        const backdrop = wrapper.querySelector('.modal-backdrop');
+        const btnConfirm = wrapper.querySelector('[data-auth-required="confirm"]');
+        const btnCancel = wrapper.querySelector('[data-auth-required="cancel"]');
+
+        // بستن با کلیک روی پس‌زمینه
+        backdrop.addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) wrapper.remove();
+        });
+
+        // تایید => باز کردن مودال اصلی احراز هویت
+        btnConfirm?.addEventListener('click', () => {
+            document.getElementById('openAuthModalBtn')?.click();
+            document.getElementById('openAuthModalHeaderBtn')?.click();
+            wrapper.remove();
+        });
+
+        // انصراف => بستن
+        btnCancel?.addEventListener('click', () => wrapper.remove());
+    }
+
     // Fire and forget on load
     refreshAuth().then(() => {
         // Adapt navbar register link to 'داشبورد' when authenticated
@@ -396,34 +552,141 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         } catch {}
+
+        // Toggle header auth actions visibility
+        try {
+            const mobileAuthLink = document.getElementById('mobileAuthLink');
+            const mobileAuthText = document.getElementById('mobileAuthText');
+            
+            if (AUTH.authenticated) {
+                // Desktop buttons
+                if (headerDashboardLink) headerDashboardLink.style.display = 'inline-flex';
+                if (openAuthModalHeaderBtn) openAuthModalHeaderBtn.style.display = 'none';
+                
+                // Mobile menu item
+                if (mobileAuthLink) {
+                    mobileAuthLink.setAttribute('href', '/dashboard/user/');
+                    mobileAuthLink.classList.remove('protected-content');
+                }
+                if (mobileAuthText) mobileAuthText.textContent = 'حساب کاربری';
+            } else {
+                // Desktop buttons
+                if (headerDashboardLink) headerDashboardLink.style.display = 'none';
+                if (openAuthModalHeaderBtn) openAuthModalHeaderBtn.style.display = 'inline-flex';
+                
+                // Mobile menu item
+                if (mobileAuthLink) {
+                    mobileAuthLink.setAttribute('href', '#register');
+                    mobileAuthLink.classList.add('protected-content');
+                }
+                if (mobileAuthText) mobileAuthText.textContent = 'ورود / ثبت‌نام';
+            }
+        } catch {}
+
+        // اضافه کردن دکمه‌های علاقه‌مندی به مقالات و کانفیگ‌ها
+        addFavoriteButtons();
     });
 
     function guardOrScrollToRegister(e) {
         if (!AUTH.authenticated) {
             if (e && typeof e.preventDefault === 'function') e.preventDefault();
-            const reg = document.getElementById('register');
-            if (reg) reg.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            showNotification('برای ادامه ابتدا ثبت‌نام کنید.', 'error');
+            showAuthRequiredModal();
             return true;
         }
         return false;
     }
 
-    // Intercept internal navigation clicks (anchors)
+    function addFavoriteButtons() {
+        // حذف هر دکمه علاقه‌مندی قبلی از بخش ثبت‌نام/ورود
+        document.querySelectorAll('#register .favorite-btn').forEach(el => el.remove());
+
+        // اضافه کردن دکمه علاقه‌مندی فقط به مقاله‌ها و پنل‌ها
+        document.querySelectorAll('.article-card, .dns-server-card').forEach((card, index) => {
+            // پرهیز از افزودن به کارت‌های داخل سکشن ثبت‌نام یا کارت‌های عمومی
+            if (card.closest('#register') || card.hasAttribute('data-no-favorite')) return;
+            if (card.querySelector('.favorite-btn')) return; // اگر قبلاً اضافه شده
+            
+            const title = card.querySelector('.card-title, .article-title, .dns-server-name')?.textContent || `آیتم ${index + 1}`;
+            const type = card.classList.contains('article-card') ? 'article' : 'config';
+            const url = window.location.pathname;
+            const id = `${type}_${index}_${Date.now()}`;
+            
+            const favoriteBtn = document.createElement('button');
+            favoriteBtn.className = 'favorite-btn';
+            favoriteBtn.setAttribute('data-favorite-id', id);
+            favoriteBtn.style.cssText = `
+                position: absolute;
+                top: 12px;
+                left: 12px;
+                background: var(--surface-strong);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-full);
+                width: 36px;
+                height: 36px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all var(--duration-normal) ease;
+                backdrop-filter: blur(10px);
+                z-index: 10;
+            `;
+            
+            favoriteBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleFavorite(id, title, type, url);
+            });
+            
+            favoriteBtn.addEventListener('mouseenter', () => {
+                favoriteBtn.style.background = 'var(--surface-hover)';
+                favoriteBtn.style.borderColor = 'var(--accent)';
+                favoriteBtn.style.transform = 'scale(1.1)';
+            });
+            
+            favoriteBtn.addEventListener('mouseleave', () => {
+                favoriteBtn.style.background = 'var(--surface-strong)';
+                favoriteBtn.style.borderColor = 'var(--border)';
+                favoriteBtn.style.transform = 'scale(1)';
+            });
+            
+            card.style.position = 'relative';
+            card.appendChild(favoriteBtn);
+        });
+        
+        updateFavoriteButtons();
+    }
+
+    // Enhanced navigation with auth protection
     document.addEventListener('click', (e) => {
         const a = e.target.closest('a');
         if (!a) return;
         const href = a.getAttribute('href') || '';
+        
         // Allow clicking the register anchor explicitly
         if (href.startsWith('#register')) return;
+        
         // Allow external links and protocols
         if (/^https?:\/\//i.test(href) || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+        
+        // Check for protected content markers
+        const isProtected = a.classList.contains('protected-content') || 
+                           a.closest('.protected-content') ||
+                           a.getAttribute('data-requires-auth') === 'true';
+        
+        if (isProtected && !AUTH.authenticated) {
+            e.preventDefault();
+            guardOrScrollToRegister(e);
+            return;
+        }
+        
         // Normalize internal URL
         try {
             const url = new URL(href, location.href);
             if (url.origin === location.origin) {
-                // Allow scrolling to in-page anchors on the same page (home/register already handled)
+                // Allow scrolling to in-page anchors on the same page
                 if (href.startsWith('#')) return;
+                
                 // Allow only specific informational pages and admin without forcing registration
                 const p = url.pathname;
                 const infoPaths = new Set([
@@ -433,22 +696,56 @@ document.addEventListener('DOMContentLoaded', function() {
                     '/Pages/help.html',
                     '/Pages/faq.html'
                 ]);
+                
                 if (p.startsWith('/dashboard/admin/') || p === '/dashboard/admin' || infoPaths.has(p)) {
                     return;
                 }
-                guardOrScrollToRegister(e);
+                
+                // Protected paths that require authentication
+                const protectedPaths = [
+                    '/Pages/ios/',
+                    '/Pages/android/',
+                    '/Pages/windows/',
+                    '/Pages/web-panel/',
+                    '/Pages/python-panel.html',
+                    '/Pages/openvpn.html',
+                    '/Pages/dns.html',
+                    '/Pages/wireguard.html'
+                ];
+                
+                if (protectedPaths.some(path => p.startsWith(path)) && !AUTH.authenticated) {
+                    guardOrScrollToRegister(e);
+                    return;
+                }
             }
         } catch {
-            // If URL parsing fails, guard conservatively
-            guardOrScrollToRegister(e);
+            // If URL parsing fails, guard conservatively for non-info pages
+            if (!href.startsWith('#') && !AUTH.authenticated) {
+                guardOrScrollToRegister(e);
+            }
         }
     }, true);
 
-    // Intercept article card opens
+    // Enhanced article and content card protection
     document.addEventListener('click', (e) => {
-        const card = e.target.closest('.article-card');
-        if (card) {
+        // Skip if clicking on favorite button
+        if (e.target.closest('.favorite-btn')) return;
+        
+        const card = e.target.closest('.article-card, .dns-server-card');
+        if (card && !AUTH.authenticated) {
+            e.preventDefault();
+            e.stopPropagation();
             guardOrScrollToRegister(e);
+            return;
+        }
+        
+        // Handle download buttons
+        const downloadBtn = e.target.closest('[data-download], .download-btn');
+        if (downloadBtn && !AUTH.authenticated) {
+            e.preventDefault();
+            e.stopPropagation();
+            guardOrScrollToRegister(e);
+            return;
         }
     }, true);
 
@@ -533,87 +830,144 @@ document.addEventListener('DOMContentLoaded', function() {
         block.title = 'برای کپی کلیک کنید';
     });
 
-    // Notification system
-    function showNotification(message, type = 'info') {
+    // Enhanced Notification system
+    function showNotification(message, type = 'info', duration = 4000) {
         // Remove existing notifications
         const existingNotifications = document.querySelectorAll('.notification');
         existingNotifications.forEach(notification => notification.remove());
 
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
-        notification.textContent = message;
+        notification.setAttribute('role', 'alert');
+        notification.setAttribute('aria-live', 'polite');
+        
+        // Create notification content
+        const content = document.createElement('div');
+        content.className = 'notification-content';
+        content.textContent = message;
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'notification-close';
+        closeBtn.innerHTML = '×';
+        closeBtn.setAttribute('aria-label', 'بستن اعلان');
+        closeBtn.addEventListener('click', () => removeNotification(notification));
+        
+        notification.appendChild(content);
+        notification.appendChild(closeBtn);
 
-        // Style the notification
+        // Enhanced styling
+        const colors = {
+            success: 'var(--success)',
+            error: 'var(--error)',
+            warning: 'var(--warning)',
+            info: 'var(--accent)'
+        };
+
         Object.assign(notification.style, {
             position: 'fixed',
-            top: '20px',
+            top: '24px',
             left: '50%',
             transform: 'translateX(-50%)',
-            background: type === 'success' ? 'rgba(0, 212, 255, 0.9)' : 'rgba(255, 68, 68, 0.9)',
+            background: `rgba(10, 10, 10, 0.95)`,
+            border: `2px solid ${colors[type] || colors.info}`,
             color: '#ffffff',
-            padding: '12px 24px',
-            borderRadius: '8px',
+            padding: '16px 20px',
+            borderRadius: 'var(--radius-lg)',
             fontSize: '14px',
             fontWeight: '500',
             zIndex: '10000',
-            backdropFilter: 'blur(10px)',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-            animation: 'slideInDown 0.3s ease'
+            backdropFilter: 'blur(20px)',
+            boxShadow: `0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px ${colors[type] || colors.info}33`,
+            animation: 'slideInDown 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            maxWidth: '400px',
+            minWidth: '200px'
         });
 
         document.body.appendChild(notification);
 
-        // Auto remove after 3 seconds
-        setTimeout(() => {
-            notification.style.animation = 'slideOutUp 0.3s ease';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 300);
-        }, 3000);
+        // Auto remove
+        const timeoutId = setTimeout(() => removeNotification(notification), duration);
+        
+        // Store timeout ID for manual removal
+        notification.timeoutId = timeoutId;
     }
 
-    // Add notification animations to CSS dynamically
-    if (!document.querySelector('#notification-styles')) {
-        const style = document.createElement('style');
-        style.id = 'notification-styles';
-        style.textContent = `
-            @keyframes slideInDown {
-                from {
-                    transform: translateX(-50%) translateY(-100%);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(-50%) translateY(0);
-                    opacity: 1;
-                }
+    function removeNotification(notification) {
+        if (notification.timeoutId) {
+            clearTimeout(notification.timeoutId);
+        }
+        
+        notification.style.animation = 'slideOutUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
             }
+        }, 300);
+    }
 
-            @keyframes slideOutUp {
-                from {
-                    transform: translateX(-50%) translateY(0);
-                    opacity: 1;
-                }
-                to {
-                    transform: translateX(-50%) translateY(-100%);
-                    opacity: 0;
-                }
+    // Enhanced dynamic styles
+    if (!document.querySelector('#enhanced-styles')) {
+        const style = document.createElement('style');
+        style.id = 'enhanced-styles';
+        style.textContent = `
+            .notification {
+                font-family: inherit;
+            }
+            
+            .notification-content {
+                flex: 1;
+            }
+            
+            .notification-close {
+                background: none;
+                border: none;
+                color: inherit;
+                font-size: 18px;
+                cursor: pointer;
+                padding: 0;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                transition: background var(--duration-fast) ease;
+            }
+            
+            .notification-close:hover {
+                background: rgba(255, 255, 255, 0.1);
             }
 
             .glass-card:hover .card-icon {
                 transform: scale(1.1) rotate(5deg);
-                transition: transform 0.3s ease;
+                transition: transform var(--duration-normal) ease;
+            }
+            
+            .favorite-btn.favorited {
+                color: var(--error) !important;
+                background: rgba(var(--error-rgb), 0.1) !important;
+                border-color: var(--error) !important;
+            }
+            
+            .favorite-btn:not(.favorited) {
+                color: var(--text-muted);
+            }
+            
+            .favorite-btn:not(.favorited):hover {
+                color: var(--error) !important;
             }
 
             .code-block:hover {
-                background: rgba(0, 212, 255, 0.1);
-                border-color: rgba(0, 212, 255, 0.3);
-                transition: all 0.3s ease;
+                background: var(--accent-glow);
+                border-color: var(--accent);
+                transition: all var(--duration-normal) ease;
             }
 
             .stats .stat {
-                transition: transform 0.3s ease;
+                transition: transform var(--duration-normal) ease;
             }
 
             .stats .stat:hover {
@@ -622,7 +976,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             .footer-list a {
                 position: relative;
-                transition: all 0.3s ease;
+                transition: all var(--duration-normal) ease;
             }
 
             .footer-list a::after {
@@ -632,77 +986,230 @@ document.addEventListener('DOMContentLoaded', function() {
                 left: 0;
                 width: 0;
                 height: 2px;
-                background: linear-gradient(90deg, #00d4ff, #0099cc);
-                transition: width 0.3s ease;
+                background: linear-gradient(90deg, var(--accent), var(--accent-light));
+                transition: width var(--duration-normal) ease;
             }
 
             .footer-list a:hover::after {
                 width: 100%;
             }
+            
+            /* Enhanced focus indicators */
+            .keyboard-navigation *:focus {
+                outline: 3px solid var(--accent) !important;
+                outline-offset: 2px !important;
+                box-shadow: 0 0 0 6px var(--accent-glow) !important;
+            }
         `;
         document.head.appendChild(style);
     }
 
-    // Performance monitoring (basic)
+    // Enhanced Performance monitoring and optimization
     const perfData = performance.getEntriesByType('navigation')[0];
     if (perfData) {
-        console.log(`🚀 Pro TooLs loaded in ${Math.round(perfData.loadEventEnd - perfData.fetchStart)}ms`);
+        const loadTime = Math.round(perfData.loadEventEnd - perfData.fetchStart);
+        console.log(`🚀 Pro TooLs loaded in ${loadTime}ms`);
         console.log(`✅ با بیش از 2 سال تجربه در ابزارهای دیجیتال - Pro TooLs Team`);
+        
+        // Performance metrics
+        const metrics = {
+            loadTime,
+            domContentLoaded: Math.round(perfData.domContentLoadedEventEnd - perfData.fetchStart),
+            firstPaint: performance.getEntriesByType('paint').find(entry => entry.name === 'first-paint')?.startTime || 0,
+            firstContentfulPaint: performance.getEntriesByType('paint').find(entry => entry.name === 'first-contentful-paint')?.startTime || 0
+        };
+        
+        // Log performance warnings
+        if (loadTime > 3000) {
+            console.warn('⚠️ Slow loading detected. Consider optimizing assets.');
+        }
+        
+        // Store metrics for analytics
+        window.proToolsMetrics = metrics;
     }
+    
+    // Lazy loading for images
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                if (img.dataset.src) {
+                    img.src = img.dataset.src;
+                    img.removeAttribute('data-src');
+                    observer.unobserve(img);
+                }
+            }
+        });
+    });
+    
+    document.querySelectorAll('img[data-src]').forEach(img => {
+        imageObserver.observe(img);
+    });
 
-    // Keyboard navigation support
+    // Enhanced Keyboard navigation and accessibility
+    let isKeyboardUser = false;
+    
     document.addEventListener('keydown', function(e) {
-        // Escape key to close mobile menu
-        if (e.key === 'Escape' && navMenu.classList.contains('active')) {
-            hamburger.classList.remove('active');
-            navMenu.classList.remove('active');
+        // Escape key to close mobile menu and modals
+        if (e.key === 'Escape') {
+            if (navMenu && navMenu.classList.contains('active')) {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+            }
+            
+            // Close auth modal
+            const authModal = document.getElementById('authModal');
+            if (authModal && authModal.style.display === 'flex') {
+                authModal.style.display = 'none';
+            }
         }
 
         // Tab navigation enhancement
         if (e.key === 'Tab') {
+            isKeyboardUser = true;
             document.body.classList.add('keyboard-navigation');
+        }
+        
+        // Arrow key navigation for dropdowns
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            const activeDropdown = document.querySelector('.dropdown.active');
+            if (activeDropdown) {
+                e.preventDefault();
+                const items = activeDropdown.querySelectorAll('.dropdown-item');
+                const currentFocus = document.activeElement;
+                const currentIndex = Array.from(items).indexOf(currentFocus);
+                
+                let nextIndex;
+                if (e.key === 'ArrowDown') {
+                    nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+                } else {
+                    nextIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+                }
+                
+                items[nextIndex]?.focus();
+            }
         }
     });
 
     document.addEventListener('mousedown', function() {
-        document.body.classList.remove('keyboard-navigation');
+        if (isKeyboardUser) {
+            isKeyboardUser = false;
+            document.body.classList.remove('keyboard-navigation');
+        }
+    });
+    
+    // Enhanced focus management
+    document.addEventListener('focusin', function(e) {
+        if (isKeyboardUser) {
+            e.target.setAttribute('data-keyboard-focus', 'true');
+        }
+    });
+    
+    document.addEventListener('focusout', function(e) {
+        e.target.removeAttribute('data-keyboard-focus');
     });
 
-    // Add keyboard navigation styles
-    if (!document.querySelector('#keyboard-nav-styles')) {
-        const keyboardStyle = document.createElement('style');
-        keyboardStyle.id = 'keyboard-nav-styles';
-        keyboardStyle.textContent = `
-            .keyboard-navigation *:focus {
-                outline: 2px solid #00d4ff !important;
-                outline-offset: 2px !important;
-            }
-        `;
-        document.head.appendChild(keyboardStyle);
+    // Enhanced accessibility features
+    function addSkipLink() {
+        if (!document.querySelector('.skip-link')) {
+            const skipLink = document.createElement('a');
+            skipLink.href = '#main-content';
+            skipLink.className = 'skip-link';
+            skipLink.textContent = 'پرش به محتوای اصلی';
+            document.body.insertBefore(skipLink, document.body.firstChild);
+        }
     }
+    
+    // Add ARIA labels to interactive elements
+    function enhanceAccessibility() {
+        // Add ARIA labels to buttons without text
+        document.querySelectorAll('button:not([aria-label]):not([aria-labelledby])').forEach(btn => {
+            if (!btn.textContent.trim()) {
+                if (btn.classList.contains('modal-close')) {
+                    btn.setAttribute('aria-label', 'بستن');
+                } else if (btn.classList.contains('hamburger')) {
+                    btn.setAttribute('aria-label', 'منوی ناوبری');
+                } else if (btn.classList.contains('favorite-btn')) {
+                    btn.setAttribute('aria-label', 'اضافه به علاقه‌مندی‌ها');
+                }
+            }
+        });
+        
+        // Enhance form accessibility
+        document.querySelectorAll('input:not([aria-label]):not([aria-labelledby])').forEach(input => {
+            const placeholder = input.getAttribute('placeholder');
+            if (placeholder) {
+                input.setAttribute('aria-label', placeholder);
+            }
+        });
+        
+        // Add live region for dynamic content
+        if (!document.querySelector('#live-region')) {
+            const liveRegion = document.createElement('div');
+            liveRegion.id = 'live-region';
+            liveRegion.setAttribute('aria-live', 'polite');
+            liveRegion.setAttribute('aria-atomic', 'true');
+            liveRegion.style.cssText = 'position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;';
+            document.body.appendChild(liveRegion);
+        }
+    }
+    
+    addSkipLink();
+    enhanceAccessibility();
 
-    // Intersection Observer for animations
+    // Enhanced Intersection Observer for animations
     const observerOptions = {
         threshold: 0.1,
         rootMargin: '0px 0px -50px 0px'
     };
 
-    const observer = new IntersectionObserver((entries) => {
+    const animationObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
+                const target = entry.target;
+                target.classList.add('animate-in');
+                
+                // Add staggered animation delay for multiple elements
+                const siblings = Array.from(target.parentElement?.children || []);
+                const index = siblings.indexOf(target);
+                target.style.animationDelay = `${index * 100}ms`;
+                
+                animationObserver.unobserve(target);
             }
         });
     }, observerOptions);
 
-    // Observe cards for scroll animations
-    cards.forEach(card => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(30px)';
-        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        observer.observe(card);
+    // Observe elements for scroll animations
+    const animateElements = document.querySelectorAll('.glass-card, .section-title, .hero-content > *');
+    animateElements.forEach((element, index) => {
+        element.classList.add('animate-ready');
+        animationObserver.observe(element);
     });
+    
+    // Add animation styles
+    const animationStyle = document.createElement('style');
+    animationStyle.textContent = `
+        .animate-ready {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            .animate-ready,
+            .animate-in {
+                opacity: 1;
+                transform: none;
+                transition: none;
+            }
+        }
+    `;
+    document.head.appendChild(animationStyle);
 
     // Theme management (basic)
     const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
@@ -738,14 +1245,47 @@ document.addEventListener('DOMContentLoaded', function() {
         yearEl.textContent = new Date().getFullYear();
     }
 
-    // Final initialization message
+    // Enhanced initialization and feature detection
+    const features = {
+        webp: document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') === 0,
+        intersectionObserver: 'IntersectionObserver' in window,
+        serviceWorker: 'serviceWorker' in navigator,
+        localStorage: (() => {
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                return true;
+            } catch { return false; }
+        })()
+    };
+    
+    // Apply feature classes to body
+    Object.entries(features).forEach(([feature, supported]) => {
+        document.body.classList.add(supported ? `${feature}-supported` : `no-${feature}`);
+    });
+    
     console.log(`
     ╔══════════════════════════════════════╗
-    ║        🚀 Pro TooLs Loaded!          ║
+    ║        🚀 Pro TooLs Enhanced!        ║
     ║  بیش از 2 سال تجربه در ابزارهای دیجیتال  ║
     ║    Digital Tools Expert Team         ║
+    ║                                      ║
+    ║  ✨ Enhanced UI/UX Features:         ║
+    ║  • Modern Design System              ║
+    ║  • Enhanced Accessibility            ║
+    ║  • Smooth Animations                 ║
+    ║  • Better Performance                ║
+    ║  • Mobile Optimized                  ║
     ╚══════════════════════════════════════╝
     `);
+    
+    // Announce to screen readers that page is ready
+    const liveRegion = document.getElementById('live-region');
+    if (liveRegion) {
+        setTimeout(() => {
+            liveRegion.textContent = 'صفحه بارگذاری شد و آماده استفاده است';
+        }, 1000);
+    }
 
     // Initialize particles background if library and container are present
     const particlesEl = document.getElementById('tsparticles');
@@ -789,7 +1329,33 @@ function debounce(func, wait) {
     };
 }
 
+// Enhanced utility functions
+function throttle(func, limit) {
+    let inThrottle;
+    return function() {
+        const args = arguments;
+        const context = this;
+        if (!inThrottle) {
+            func.apply(context, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    }
+}
+
+function preloadCriticalResources() {
+    const criticalImages = document.querySelectorAll('img[data-critical]');
+    criticalImages.forEach(img => {
+        if (img.dataset.src) {
+            img.src = img.dataset.src;
+        }
+    });
+}
+
+// Initialize critical resources
+preloadCriticalResources();
+
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { debounce, showNotification };
+    module.exports = { debounce, throttle, showNotification, removeNotification };
 }

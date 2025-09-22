@@ -139,11 +139,15 @@
       const newsData = await api.list('news/');
       const configsData = await api.list('configs/');
       const filesData = await api.list('uploads/');
+      // Users stored by key pattern: user:<telegram_id>
+      const usersData = await api.list('user:');
       
       $('#articles-count').textContent = articlesData.keys?.length || 0;
       $('#news-count').textContent = newsData.keys?.length || 0;
       $('#configs-count').textContent = configsData.keys?.length || 0;
       $('#files-count').textContent = filesData.keys?.length || 0;
+      const usersCountEl = document.getElementById('users-count');
+      if (usersCountEl) usersCountEl.textContent = usersData.keys?.length || 0;
       
       // Load recent activity (simplified)
       const recentList = $('#recent-activity-list');
