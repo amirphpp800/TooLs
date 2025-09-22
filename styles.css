@@ -146,12 +146,11 @@ body {
 
 /* Header */
 .header {
-    position: static;
-    top: 0;
+    position: relative;
     width: 100%;
-    background: rgba(var(--bg-rgb), 0.55);
-    backdrop-filter: blur(26px) saturate(160%);
-    -webkit-backdrop-filter: blur(26px) saturate(160%);
+    background: rgba(var(--bg-rgb), 0.85);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
     border-bottom: 1px solid var(--border-strong);
     z-index: 1000;
     transition: all 0.3s ease;
@@ -176,6 +175,7 @@ body {
     height: 3px;
     z-index: 1200;
     pointer-events: none;
+    display: none;
 }
 .scroll-progress span {
     display: block;
@@ -189,10 +189,10 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 5%;
+    padding: 1rem 5%;
     max-width: 1200px;
     margin: 0 auto;
-    min-height: 60px;
+    min-height: 70px;
 }
 
 /* Header layout: menu items right, logo left, hamburger right */
@@ -548,6 +548,9 @@ body {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.2rem;
+    margin-top: 2rem;
+    justify-items: center;
+    place-items: center;
 }
 
 .article-card {
@@ -653,6 +656,8 @@ body {
     grid-template-columns: 1fr;
     gap: 1.5rem;
     margin-top: 2rem;
+    justify-items: center;
+    place-items: center;
 }
 
 .dns-server-card {
@@ -848,6 +853,8 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 2rem;
     margin-top: 3rem;
+    justify-items: center;
+    place-items: center;
 }
 
 .glass-card {
@@ -1177,8 +1184,8 @@ body {
 /* Responsive Design */
 @media (max-width: 768px) {
     .navbar {
-        padding: 0.25rem 3%;
-        min-height: 42px;
+        padding: 0.5rem 3%;
+        min-height: 50px;
     }
 
     .nav-menu {
@@ -1276,6 +1283,8 @@ body {
     .cards-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
+        justify-items: center;
+        place-items: center;
     }
 
     .glass-card {
@@ -1284,15 +1293,20 @@ body {
 
     /* Center cards on mobile and limit width for better alignment */
     .articles-grid,
-    .dns-servers-grid {
+    .dns-servers-grid,
+    .cards-grid {
         justify-items: center;
+        display: grid;
+        place-items: center;
     }
 
     .article-card,
-    .dns-server-card {
+    .dns-server-card,
+    .glass-card {
         width: 100%;
-        max-width: 520px;
-        margin-inline: auto;
+        max-width: 400px;
+        margin: 0 auto;
+        justify-self: center;
     }
 
     .stats {
@@ -1312,16 +1326,21 @@ body {
 }
 
 @media (max-width: 480px) {
+    .navbar {
+        padding: 0.4rem 2%;
+        min-height: 45px;
+    }
+
     .hero {
         padding: 0 1rem;
     }
 
     .hero-title {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
     }
 
     .section {
-        padding: 4rem 1rem;
+        padding: 3rem 1rem;
     }
 
     .container {
@@ -1330,11 +1349,20 @@ body {
 
     .glass-card {
         padding: 1rem;
+        max-width: 350px;
     }
 
     .btn {
         padding: 0.8rem 1.5rem;
         font-size: 1rem;
+    }
+
+    /* Further improve card centering on very small screens */
+    .cards-grid,
+    .articles-grid,
+    .dns-servers-grid {
+        padding: 0 1rem;
+        justify-content: center;
     }
 }
 
