@@ -61,16 +61,197 @@
       <!-- Dashboard -->
       <section id="dashboard-section" class="dashboard hidden" style="display: none;">
         <aside class="sidebar">
-          <button class="sidebar-link active" data-view="kv">مدیریت محتوا (KV)</button>
-          <button class="sidebar-link" data-view="post">پست جدید</button>
-          <button class="sidebar-link" data-view="templates">تمپلیت‌های آماده</button>
-          <button class="sidebar-link" data-view="files">مدیریت فایل</button>
-          <button class="sidebar-link" data-view="contacts">تماس‌ها</button>
-          <button class="sidebar-link" data-view="sponsors">اسپانسرها</button>
-          <button class="sidebar-link" data-view="pages">فایل‌های استاتیک (نمایش)</button>
+          <div class="sidebar-header">
+            <h3>📊 پنل مدیریت</h3>
+          </div>
+          <button class="sidebar-link active" data-view="dashboard">
+            <span class="sidebar-icon">🏠</span>
+            <span>داشبورد</span>
+          </button>
+          <button class="sidebar-link" data-view="kv">
+            <span class="sidebar-icon">💾</span>
+            <span>مدیریت محتوا (KV)</span>
+          </button>
+          <button class="sidebar-link" data-view="post">
+            <span class="sidebar-icon">✍️</span>
+            <span>پست جدید</span>
+          </button>
+          <button class="sidebar-link" data-view="templates">
+            <span class="sidebar-icon">📋</span>
+            <span>تمپلیت‌های آماده</span>
+          </button>
+          <button class="sidebar-link" data-view="content-manager">
+            <span class="sidebar-icon">📚</span>
+            <span>مدیریت محتوا</span>
+          </button>
+          <button class="sidebar-link" data-view="files">
+            <span class="sidebar-icon">📁</span>
+            <span>مدیریت فایل</span>
+          </button>
+          <button class="sidebar-link" data-view="contacts">
+            <span class="sidebar-icon">📞</span>
+            <span>تماس‌ها</span>
+          </button>
+          <button class="sidebar-link" data-view="sponsors">
+            <span class="sidebar-icon">🤝</span>
+            <span>اسپانسرها</span>
+          </button>
+          <button class="sidebar-link" data-view="settings">
+            <span class="sidebar-icon">⚙️</span>
+            <span>تنظیمات</span>
+          </button>
+          <button class="sidebar-link" data-view="pages">
+            <span class="sidebar-icon">📄</span>
+            <span>فایل‌های استاتیک</span>
+          </button>
         </aside>
 
         <section class="content">
+          <!-- Dashboard Overview -->
+          <div id="view-dashboard" class="view" role="region" aria-label="داشبورد">
+            <div class="dashboard-header">
+              <h2>📊 داشبورد مدیریت</h2>
+              <p class="dashboard-subtitle">خلاصه‌ای از وضعیت سایت و آمار کلی</p>
+            </div>
+            
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon">📄</div>
+                <div class="stat-info">
+                  <h3 id="articles-count">-</h3>
+                  <p>مقالات</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">📰</div>
+                <div class="stat-info">
+                  <h3 id="news-count">-</h3>
+                  <p>اخبار</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">⚙️</div>
+                <div class="stat-info">
+                  <h3 id="configs-count">-</h3>
+                  <p>کانفیگ‌ها</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">📁</div>
+                <div class="stat-info">
+                  <h3 id="files-count">-</h3>
+                  <p>فایل‌ها</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="quick-actions">
+              <h3>🚀 عملیات سریع</h3>
+              <div class="quick-actions-grid">
+                <button class="quick-action-btn" onclick="switchView('post')">
+                  <span class="quick-icon">✍️</span>
+                  <span>نوشتن پست جدید</span>
+                </button>
+                <button class="quick-action-btn" onclick="switchView('templates')">
+                  <span class="quick-icon">📋</span>
+                  <span>استفاده از تمپلیت</span>
+                </button>
+                <button class="quick-action-btn" onclick="switchView('files')">
+                  <span class="quick-icon">📁</span>
+                  <span>آپلود فایل</span>
+                </button>
+                <button class="quick-action-btn" onclick="switchView('content-manager')">
+                  <span class="quick-icon">📚</span>
+                  <span>مدیریت محتوا</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="recent-activity">
+              <h3>📈 فعالیت‌های اخیر</h3>
+              <div id="recent-activity-list" class="activity-list">
+                <p class="loading-text">در حال بارگذاری...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Content Manager -->
+          <div id="view-content-manager" class="view" role="region" aria-label="مدیریت محتوا" hidden>
+            <div class="toolbar">
+              <div class="group">
+                <strong>📚 مدیریت محتوا پیشرفته</strong>
+              </div>
+              <div class="group">
+                <select id="content-type-filter" class="input">
+                  <option value="all">همه محتوا</option>
+                  <option value="articles">مقالات</option>
+                  <option value="news">اخبار</option>
+                  <option value="configs">کانفیگ‌ها</option>
+                  <option value="downloads">دانلودها</option>
+                </select>
+                <button id="btn-load-content" class="btn btn-primary">بارگذاری</button>
+                <button id="btn-refresh-content" class="btn btn-secondary">🔄 تازه‌سازی</button>
+              </div>
+            </div>
+
+            <div class="content-grid" id="content-grid">
+              <p class="loading-text">محتوایی برای نمایش وجود ندارد</p>
+            </div>
+
+            <div class="content-pagination" id="content-pagination" style="display: none;">
+              <button id="btn-prev-page" class="btn btn-secondary">قبلی</button>
+              <span id="page-info">صفحه 1 از 1</span>
+              <button id="btn-next-page" class="btn btn-secondary">بعدی</button>
+            </div>
+          </div>
+
+          <!-- Settings -->
+          <div id="view-settings" class="view" role="region" aria-label="تنظیمات" hidden>
+            <div class="toolbar">
+              <div class="group">
+                <strong>⚙️ تنظیمات سیستم</strong>
+              </div>
+            </div>
+
+            <div class="settings-sections">
+              <div class="form-section">
+                <h3>🎨 تنظیمات ظاهری</h3>
+                <div class="form-grid">
+                  <label class="form-field">
+                    <span>نام سایت</span>
+                    <input type="text" id="site-name" placeholder="Pro TooLs" />
+                  </label>
+                  <label class="form-field">
+                    <span>رنگ اصلی</span>
+                    <input type="color" id="primary-color" value="#bdbdbd" />
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h3>🔧 تنظیمات عملکردی</h3>
+                <div class="form-grid">
+                  <label class="form-field">
+                    <span>فعال‌سازی جستجو</span>
+                    <select id="search-enabled">
+                      <option value="true">فعال</option>
+                      <option value="false">غیرفعال</option>
+                    </select>
+                  </label>
+                  <label class="form-field">
+                    <span>تعداد مقالات در صفحه</span>
+                    <input type="number" id="articles-per-page" value="10" min="5" max="50" />
+                  </label>
+                </div>
+              </div>
+
+              <div class="actions">
+                <button id="btn-save-settings" class="btn btn-primary">💾 ذخیره تنظیمات</button>
+                <button id="btn-reset-settings" class="btn btn-danger">🔄 بازنشانی</button>
+              </div>
+            </div>
+          </div>
+
           <!-- KV Manager -->
           <div id="view-kv" class="view" role="region" aria-label="مدیریت محتوا">
             <div class="toolbar">

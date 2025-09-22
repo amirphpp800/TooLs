@@ -75,6 +75,7 @@
   const adminHeader = $('.admin-header');
 
   // Views
+  const viewDashboard = $('#view-dashboard');
   const viewKV = $('#view-kv');
   const viewPages = $('#view-pages');
   const viewContacts = $('#view-contacts');
@@ -82,21 +83,275 @@
   const viewPost = $('#view-post');
   const viewTemplates = $('#view-templates');
   const viewFiles = $('#view-files');
+  const viewContentManager = $('#view-content-manager');
+  const viewSettings = $('#view-settings');
+  
+  // Enhanced view switching with animation
+  function switchView(viewName) {
+    $$('.sidebar-link').forEach(b=>b.classList.remove('active'));
+    const targetBtn = $(`.sidebar-link[data-view="${viewName}"]`);
+    if (targetBtn) targetBtn.classList.add('active');
+    
+    // Hide all views
+    const allViews = [viewDashboard, viewKV, viewPages, viewContacts, viewSponsors, viewPost, viewTemplates, viewFiles, viewContentManager, viewSettings];
+    allViews.forEach(view => {
+      if (view) view.hidden = true;
+    });
+    
+    // Show target view
+    const viewMap = {
+      'dashboard': viewDashboard,
+      'kv': viewKV,
+      'pages': viewPages,
+      'contacts': viewContacts,
+      'sponsors': viewSponsors,
+      'post': viewPost,
+      'templates': viewTemplates,
+      'files': viewFiles,
+      'content-manager': viewContentManager,
+      'settings': viewSettings
+    };
+    
+    const targetView = viewMap[viewName];
+    if (targetView) {
+      targetView.hidden = false;
+      // Load data for specific views
+      if (viewName === 'dashboard') loadDashboardData();
+      if (viewName === 'content-manager') loadContentManager();
+    }
+  }
+  
+  // Make switchView global for onclick handlers
+  window.switchView = switchView;
   
   $$('.sidebar-link').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      $$('.sidebar-link').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
       const v = btn.getAttribute('data-view');
-      viewKV.hidden = v !== 'kv';
-      viewPages.hidden = v !== 'pages';
-      if (viewContacts) viewContacts.hidden = v !== 'contacts';
-      if (viewSponsors) viewSponsors.hidden = v !== 'sponsors';
-      if (viewPost) viewPost.hidden = v !== 'post';
-      if (viewTemplates) viewTemplates.hidden = v !== 'templates';
-      if (viewFiles) viewFiles.hidden = v !== 'files';
+      switchView(v);
     });
   });
+
+  // Dashboard data loading
+  async function loadDashboardData() {
+    try {
+      // Load stats
+      const articlesData = await api.list('articles/');
+      const newsData = await api.list('news/');
+      const configsData = await api.list('configs/');
+      const filesData = await api.list('uploads/');
+      
+      $('#articles-count').textContent = articlesData.keys?.length || 0;
+      $('#news-count').textContent = newsData.keys?.length || 0;
+      $('#configs-count').textContent = configsData.keys?.length || 0;
+      $('#files-count').textContent = filesData.keys?.length || 0;
+      
+      // Load recent activity (simplified)
+      const recentList = $('#recent-activity-list');
+      recentList.innerHTML = `
+        <div class="activity-item">
+          <span class="activity-icon">📄</span>
+          <span>آخرین بروزرسانی: ${new Date().toLocaleDateString('fa-IR')}</span>
+        </div>
+        <div class="activity-item">
+          <span class="activity-icon">💾</span>
+          <span>مجموع محتوا: ${(articlesData.keys?.length || 0) + (newsData.keys?.length || 0)} مورد</span>
+        </div>
+      `;
+    } catch (e) {
+      console.error('Error loading dashboard data:', e);
+    }
+  }
+
+  // Content Manager functionality
+  let currentPage = 1;
+  let totalPages = 1;
+  
+  async function loadContentManager() {
+    const contentType = $('#content-type-filter')?.value || 'all';
+    try {
+      // This would use the content API endpoint
+      const response = await fetch(`/api/admin/content?type=${contentType}&limit=12&offset=${(currentPage-1)*12}`);
+      if (response.ok) {
+        const data = await response.json();
+        renderContentGrid(data.content);
+        updatePagination(data.total, data.limit, data.offset);
+      }
+    } catch (e) {
+      console.error('Error loading content:', e);
+      $('#content-grid').innerHTML = '<p class="loading-text">خطا در بارگذاری محتوا</p>';
+    }
+  }
+  
+  function renderContentGrid(content) {
+    const grid = $('#content-grid');
+    if (!content || content.length === 0) {
+      grid.innerHTML = '<p class="loading-text">محتوایی برای نمایش وجود ندارد</p>';
+      return;
+    }
+    
+    grid.innerHTML = content.map(item => `
+      <div class="content-item">
+        <div class="content-header">
+          <h4>${item.title}</h4>
+          <span class="content-type">${getContentTypeLabel(item.type)}</span>
+        </div>
+        <p class="content-summary">${item.summary || 'بدون خلاصه'}</p>
+        <div class="content-meta">
+          <span>📅 ${item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('fa-IR') : 'نامشخص'}</span>
+          <span>📊 ${item.status || 'منتشرشده'}</span>
+        </div>
+        <div class="content-actions">
+          <button class="btn btn-xs btn-primary" onclick="editContent('${item.key}')">ویرایش</button>
+          <button class="btn btn-xs btn-secondary" onclick="previewContent('${item.key}')">پیش‌نمایش</button>
+          <button class="btn btn-xs btn-danger" onclick="deleteContent('${item.key}')">حذف</button>
+        </div>
+      </div>
+    `).join('');
+  }
+  
+  function getContentTypeLabel(type) {
+    const labels = {
+      'article': '📄 مقاله',
+      'news': '📰 خبر',
+      'config': '⚙️ کانفیگ',
+      'download': '⬇️ دانلود'
+    };
+    return labels[type] || '📄 نامشخص';
+  }
+  
+  function updatePagination(total, limit, offset) {
+    totalPages = Math.ceil(total / limit);
+    currentPage = Math.floor(offset / limit) + 1;
+    
+    const pagination = $('#content-pagination');
+    const pageInfo = $('#page-info');
+    const prevBtn = $('#btn-prev-page');
+    const nextBtn = $('#btn-next-page');
+    
+    if (totalPages > 1) {
+      pagination.style.display = 'flex';
+      pageInfo.textContent = `صفحه ${currentPage} از ${totalPages}`;
+      prevBtn.disabled = currentPage <= 1;
+      nextBtn.disabled = currentPage >= totalPages;
+    } else {
+      pagination.style.display = 'none';
+    }
+  }
+  
+  // Content actions
+  window.editContent = function(key) {
+    // Switch to KV view and load the content
+    switchView('kv');
+    setTimeout(() => {
+      if (kvKey) kvKey.value = key;
+      if (btnGet) btnGet.click();
+    }, 100);
+  };
+  
+  window.previewContent = async function(key) {
+    try {
+      const content = await api.get(key);
+      const modal = document.createElement('div');
+      modal.className = 'content-preview-modal';
+      modal.innerHTML = `
+        <div class="modal-backdrop">
+          <div class="modal">
+            <div class="modal-header">
+              <h3>پیش‌نمایش: ${key}</h3>
+              <button class="modal-close" onclick="this.closest('.content-preview-modal').remove()">×</button>
+            </div>
+            <div class="modal-body">
+              <pre>${content}</pre>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    } catch (e) {
+      notify('خطا در بارگذاری محتوا', 'error');
+    }
+  };
+  
+  window.deleteContent = async function(key) {
+    if (!confirm(`آیا مطمئن هستید که می‌خواهید "${key}" را حذف کنید؟`)) return;
+    try {
+      await api.remove(key);
+      notify('محتوا حذف شد', 'success');
+      loadContentManager();
+    } catch (e) {
+      notify('خطا در حذف محتوا', 'error');
+    }
+  };
+
+  // Settings functionality
+  const settingsElements = {
+    siteName: $('#site-name'),
+    primaryColor: $('#primary-color'),
+    searchEnabled: $('#search-enabled'),
+    articlesPerPage: $('#articles-per-page'),
+    btnSave: $('#btn-save-settings'),
+    btnReset: $('#btn-reset-settings')
+  };
+  
+  if (settingsElements.btnSave) {
+    settingsElements.btnSave.addEventListener('click', async () => {
+      try {
+        const settings = {
+          siteName: settingsElements.siteName.value,
+          primaryColor: settingsElements.primaryColor.value,
+          searchEnabled: settingsElements.searchEnabled.value === 'true',
+          articlesPerPage: parseInt(settingsElements.articlesPerPage.value)
+        };
+        
+        await api.put('settings/site.json', JSON.stringify(settings, null, 2));
+        notify('تنظیمات ذخیره شد', 'success');
+      } catch (e) {
+        notify('خطا در ذخیره تنظیمات', 'error');
+      }
+    });
+  }
+  
+  if (settingsElements.btnReset) {
+    settingsElements.btnReset.addEventListener('click', () => {
+      if (confirm('آیا مطمئن هستید که می‌خواهید تنظیمات را بازنشانی کنید؟')) {
+        settingsElements.siteName.value = 'Pro TooLs';
+        settingsElements.primaryColor.value = '#bdbdbd';
+        settingsElements.searchEnabled.value = 'true';
+        settingsElements.articlesPerPage.value = '10';
+        notify('تنظیمات بازنشانی شد', 'success');
+      }
+    });
+  }
+
+  // Event listeners for new functionality
+  if ($('#btn-load-content')) {
+    $('#btn-load-content').addEventListener('click', loadContentManager);
+  }
+  
+  if ($('#btn-refresh-content')) {
+    $('#btn-refresh-content').addEventListener('click', () => {
+      currentPage = 1;
+      loadContentManager();
+    });
+  }
+  
+  if ($('#btn-prev-page')) {
+    $('#btn-prev-page').addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        loadContentManager();
+      }
+    });
+  }
+  
+  if ($('#btn-next-page')) {
+    $('#btn-next-page').addEventListener('click', () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        loadContentManager();
+      }
+    });
+  }
 
   // KV Controls
   const prefixInput = $('#prefix');
@@ -147,7 +402,7 @@
       }, null, 2);
     }
     if (tpl === 'page') {
-      return `<!DOCTYPE html>\n<html lang="fa" dir="rtl">\n<head>\n  <meta charset="UTF-8"/>\n  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>\n  <title>صفحه جدید</title>\n  <link rel=\"/styles.css\" rel=\"stylesheet\"/>\n</head>\n<body>\n  <div class=\"section\">\n    <div class=\"container\">\n      <h1 class=\"section-title\">صفحه جدید</h1>\n      <p class=\"section-subtitle\">محتوای خود را اینجا قرار دهید.</p>\n    </div>\n  </div>\n  <script src=\"/script.js\"></script>\n</body>\n</html>`;
+      return `<!DOCTYPE html>\n<html lang="fa" dir="rtl">\n<head>\n  <meta charset="UTF-8"/>\n  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>\n  <title>صفحه جدید</title>\n  <link rel=\"stylesheet\" href=\"/styles.css\"/>\n</head>\n<body>\n  <div class=\"section\">\n    <div class=\"container\">\n      <h1 class=\"section-title\">صفحه جدید</h1>\n      <p class=\"section-subtitle\">محتوای خود را اینجا قرار دهید.</p>\n    </div>\n  </div>\n  <script src=\"/script.js\"></script>\n</body>\n</html>`;
     }
     if (tpl === 'settings') {
       return JSON.stringify({
@@ -424,7 +679,11 @@
     dashboardSection.style.display = 'grid';
     btnLogout.hidden = false;
     if (adminHeader) adminHeader.style.display = 'flex';
-    // preload list
+    
+    // Show dashboard by default
+    switchView('dashboard');
+    
+    // preload list for KV section
     try { btnList.click(); } catch {}
   }
 
@@ -652,6 +911,70 @@
       content.insertBefore(message, content.firstChild);
       setTimeout(() => message.remove(), 5000);
     }
+  }
+
+  // Button ripple effect (matching main site)
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn');
+    if (btn) {
+      const rect = btn.getBoundingClientRect();
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      ripple.style.left = (e.clientX - rect.left) + 'px';
+      ripple.style.top = (e.clientY - rect.top) + 'px';
+      btn.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 600);
+    }
+  });
+
+  // Enhanced notification system with better styling
+  function showAdvancedNotification(message, type = 'info', duration = 3000) {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.admin-notification');
+    existingNotifications.forEach(notification => notification.remove());
+
+    const notification = document.createElement('div');
+    notification.className = `admin-notification admin-notification-${type}`;
+    notification.textContent = message;
+
+    // Style the notification
+    Object.assign(notification.style, {
+      position: 'fixed',
+      top: '20px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      background: type === 'success' ? 'rgba(76, 175, 80, 0.9)' : 
+                  type === 'error' ? 'rgba(239, 83, 80, 0.9)' : 
+                  type === 'warning' ? 'rgba(255, 152, 0, 0.9)' : 
+                  'rgba(189, 189, 189, 0.9)',
+      color: '#ffffff',
+      padding: '12px 24px',
+      borderRadius: '12px',
+      fontSize: '14px',
+      fontWeight: '500',
+      zIndex: '10000',
+      backdropFilter: 'blur(10px)',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+      animation: 'slideInDown 0.3s ease',
+      fontFamily: "'DanaFaNum', 'Tahoma', 'Arial', sans-serif"
+    });
+
+    document.body.appendChild(notification);
+
+    // Auto remove
+    setTimeout(() => {
+      notification.style.animation = 'slideOutUp 0.3s ease';
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 300);
+    }, duration);
+  }
+
+  // Override the existing notify function
+  function notify(msg, type='info') {
+    showAdvancedNotification(msg, type);
   }
 
   // Check session on load
