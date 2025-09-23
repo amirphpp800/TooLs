@@ -21,7 +21,11 @@
   <div id="main-content" class="main-content hidden">
     <header class="header">
       <nav class="navbar">
-        <div class="nav-brand"><a href="../index.html" class="logo-link"><h1 class="logo"><span lang="en">Pro TooLs</span></h1></a></div>
+        <div class="nav-brand"><a href="../index.html" class="logo-link" aria-label="Pro TooLs"><img src="../icons/Logo.svg" alt="Pro TooLs" class="logo-img" /></a></div>
+        <div class="nav-actions" role="group" aria-label="ورود و حساب کاربری">
+          <a id="headerDashboardLink" href="/dashboard/user/" class="btn btn-secondary hide" style="display:none;">حساب کاربری</a>
+          <button id="openAuthModalHeaderBtn" class="btn btn-primary">ورود / ثبت‌نام</button>
+        </div>
         <ul class="nav-menu">
           <li><a class="nav-link" href="../index.html">خانه</a></li>
           <li class="dropdown">

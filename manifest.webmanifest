@@ -1,0 +1,20 @@
+{
+  "name": "Pro TooLs",
+  "short_name": "Pro TooLs",
+  "description": "ابزارهای دیجیتال پیشرفته - Pro TooLs",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#32374A",
+  "dir": "rtl",
+  "lang": "fa",
+  "icons": [
+    {
+      "src": "/icons/webapp.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

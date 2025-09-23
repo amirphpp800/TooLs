@@ -21,9 +21,42 @@ document.addEventListener('DOMContentLoaded', function() {
     const hamburger = document.querySelector('.hamburger');
     const navMenu = document.querySelector('.nav-menu');
     if (hamburger && navMenu) {
-        hamburger.addEventListener('click', function() {
-            hamburger.classList.toggle('active');
-            navMenu.classList.toggle('active');
+        function setHamburgerState(open) {
+            hamburger.classList.toggle('active', open);
+            navMenu.classList.toggle('active', open);
+            hamburger.setAttribute('aria-expanded', open ? 'true' : 'false');
+
+            // Remove any existing overlay
+            const existingOverlay = document.getElementById('mobileOverlay');
+            if (existingOverlay) {
+                existingOverlay.remove();
+            }
+
+            // No overlay needed - menu works without it
+            if (open) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+
+        hamburger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            console.log('Hamburger clicked!');
+            const open = !hamburger.classList.contains('active');
+            console.log('Setting hamburger state to:', open);
+            setHamburgerState(open);
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768 && navMenu.classList.contains('active')) {
+                // Check if click is outside menu and hamburger
+                if (!navMenu.contains(e.target) && !hamburger.contains(e.target)) {
+                    console.log('Clicked outside menu, closing...');
+                    setHamburgerState(false);
+                }
+            }
         });
 
     // Generic copy handler for buttons with data-copy attribute
@@ -52,18 +85,24 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
         // Close on link click (mobile) - but NOT when clicking dropdown toggles
-        navMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', (ev) => {
+        navMenu.addEventListener('click', (ev) => {
+            const a = ev.target.closest('a');
+            if (!a) return;
+            
+            console.log('Nav link clicked:', a.textContent.trim());
             const isToggle = a.classList.contains('dropdown-toggle');
             const href = a.getAttribute('href');
+            console.log('Is toggle:', isToggle, 'Href:', href, 'Window width:', window.innerWidth);
+            
             if (window.innerWidth <= 768) {
                 if (!isToggle && href && href !== '#') {
                     // Actual navigation link - close menu
-                    hamburger.classList.remove('active');
-                    navMenu.classList.remove('active');
+                    console.log('Closing menu for navigation');
+                    setTimeout(() => setHamburgerState(false), 100);
                 }
                 // If it's a dropdown toggle or '#', keep menu open to show items
             }
-        }));
+        });
     }
 
     // Dropdown Menu Functionality
@@ -232,6 +271,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const codeInput = document.getElementById('codeInput');
     const verifyBtn = document.getElementById('verifyCodeBtn');
     const verifyStatus = document.getElementById('verifyStatus');
+    // New tab buttons and captions
+    const authTabLogin = document.getElementById('authTabLogin');
+    const authTabRegister = document.getElementById('authTabRegister');
+    const tgIdCaption = document.getElementById('tgIdCaption');
+    const step2Title = document.getElementById('step2Title');
+    const step2Caption = document.getElementById('step2Caption');
+    const codePrompt = document.getElementById('codePrompt');
+    const authModeBadge = document.getElementById('authModeBadge');
+    const authModeHint = document.getElementById('authModeHint');
+    const viewAuthPanel = document.getElementById('view-auth');
+    let AUTH_MODE = 'login'; // 'login' | 'register'
 
     function setText(el, text) {
         if (el) el.textContent = text || '';
@@ -263,14 +313,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const viewAuth = document.getElementById('view-auth');
     const viewGold = document.getElementById('view-gold');
 
-    function openAuthModal() {
-        if (authModal) authModal.style.display = 'flex';
+    function openAuthModal(mode) {
+        if (authModal) {
+            authModal.style.display = 'flex';
+            if (mode === 'login' || mode === 'register') {
+                applyAuthMode(mode);
+            }
+        } else {
+            // Fallback for pages without modal: redirect to index with hash
+            const m = mode ? `?mode=${mode}` : '';
+            window.location.href = `/index.html#register${m}`;
+        }
     }
     function closeAuthModal() {
         if (authModal) authModal.style.display = 'none';
     }
-    openAuthModalBtn?.addEventListener('click', openAuthModal);
-    openAuthModalHeaderBtn?.addEventListener('click', openAuthModal);
+    openAuthModalBtn?.addEventListener('click', () => openAuthModal());
+    openAuthModalHeaderBtn?.addEventListener('click', () => openAuthModal());
     closeAuthModalBtn?.addEventListener('click', closeAuthModal);
     cancelAuthModalBtn?.addEventListener('click', closeAuthModal);
     
@@ -313,6 +372,65 @@ document.addEventListener('DOMContentLoaded', function() {
     // default
     switchTab('auth');
 
+    // New: Login/Register mode switching within auth view
+    function applyAuthMode(mode) {
+        AUTH_MODE = mode;
+        if (authTabLogin && authTabRegister) {
+            if (mode === 'login') {
+                authTabLogin.classList.add('btn-primary');
+                authTabRegister.classList.remove('btn-primary');
+                authTabLogin.classList.remove('btn-outline');
+                authTabRegister.classList.add('btn-outline');
+                authTabLogin.setAttribute('aria-selected', 'true');
+                authTabRegister.setAttribute('aria-selected', 'false');
+                authTabLogin.classList.add('is-active');
+                authTabLogin.classList.remove('is-inactive');
+                authTabRegister.classList.add('is-inactive');
+                authTabRegister.classList.remove('is-active');
+            } else {
+                authTabRegister.classList.add('btn-primary');
+                authTabLogin.classList.remove('btn-primary');
+                authTabRegister.classList.remove('btn-outline');
+                authTabLogin.classList.add('btn-outline');
+                authTabLogin.setAttribute('aria-selected', 'false');
+                authTabRegister.setAttribute('aria-selected', 'true');
+                authTabRegister.classList.add('is-active');
+                authTabRegister.classList.remove('is-inactive');
+                authTabLogin.classList.add('is-inactive');
+                authTabLogin.classList.remove('is-active');
+            }
+        }
+        // Update captions
+        if (tgIdCaption) tgIdCaption.textContent = mode === 'login' ? 'برای ورود، آیدی عددی تلگرام خود را وارد کنید (فقط اعداد بدون @).' : 'برای ثبت‌نام، آیدی عددی تلگرام خود را وارد کنید (فقط اعداد بدون @).';
+        if (step2Title) step2Title.textContent = 'مرحله ۲: دریافت و ورود کد';
+        if (step2Caption) step2Caption.textContent = 'ربات را استارت کنید تا کد ۴ رقمی برای شما ارسال شود.';
+        if (codePrompt) codePrompt.textContent = 'کد ۴ رقمی را وارد کنید:';
+        if (startBtn) startBtn.textContent = mode === 'login' ? 'ارسال کد ورود' : 'ارسال کد ثبت‌نام';
+        if (verifyBtn) verifyBtn.textContent = mode === 'login' ? 'تایید ورود' : 'تایید ثبت‌نام';
+        if (authModeBadge) authModeBadge.textContent = mode === 'login' ? '(ورود)' : '(ثبت‌نام)';
+        if (authModeHint) authModeHint.textContent = mode === 'login'
+            ? 'در حالت ورود هستید. شماره آیدی تلگرام را وارد کنید تا کد برای شما ارسال شود.'
+            : 'در حالت ثبت‌نام هستید. شماره آیدی تلگرام را وارد کنید تا کد ثبت‌نام برای شما ارسال شود.';
+        if (viewAuthPanel) viewAuthPanel.setAttribute('aria-labelledby', mode === 'login' ? 'authTabLogin' : 'authTabRegister');
+        setText(regStatus, '');
+        setText(verifyStatus, '');
+        step2Box && (step2Box.style.display = 'none');
+    }
+    authTabLogin?.addEventListener('click', () => applyAuthMode('login'));
+    authTabRegister?.addEventListener('click', () => applyAuthMode('register'));
+    applyAuthMode('login');
+
+    // If we landed on index with #register (from other pages), auto-open modal and apply mode
+    try {
+        const hash = window.location.hash || '';
+        const params = new URLSearchParams(window.location.search);
+        const modeParam = params.get('mode');
+        if (hash.startsWith('#register')) {
+            const m = (modeParam === 'login' || modeParam === 'register') ? modeParam : undefined;
+            openAuthModal(m);
+        }
+    } catch {}
+
     if (startBtn) {
         startBtn.addEventListener('click', async () => {
             const tgId = (tgIdInput?.value || '').trim();
@@ -321,13 +439,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 showNotification('آیدی عددی معتبر نیست', 'error');
                 return;
             }
-            setText(regStatus, 'در حال ارسال کد به ربات تلگرام...');
+            setText(regStatus, AUTH_MODE === 'login' ? 'در حال ارسال کد ورود به ربات تلگرام...' : 'در حال ارسال کد ثبت‌نام به ربات تلگرام...');
             startBtn.disabled = true;
             try {
                 const { ok, data } = await apiPost('/api/register/start', { telegram_id: tgId });
                 if (!ok) {
-                    setText(regStatus, data?.error === 'RATE_LIMITED' ? 'محدودیت ارسال. بعدا تلاش کنید.' : 'خطا در شروع ثبت‌نام');
-                    showNotification('خطا در شروع ثبت‌نام', 'error');
+                    const errMsg = data?.error === 'RATE_LIMITED' ? 'محدودیت ارسال. بعدا تلاش کنید.' : 'خطا در شروع فرآیند';
+                    setText(regStatus, errMsg);
+                    showNotification(errMsg, 'error');
                     return;
                 }
                 // Save for later steps
@@ -546,8 +665,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // تایید => باز کردن مودال اصلی احراز هویت
         btnConfirm?.addEventListener('click', () => {
-            document.getElementById('openAuthModalBtn')?.click();
-            document.getElementById('openAuthModalHeaderBtn')?.click();
+            if (authModal) {
+                openAuthModal();
+            } else {
+                window.location.href = '/index.html#register';
+            }
             wrapper.remove();
         });
 
@@ -666,51 +788,7 @@ document.addEventListener('DOMContentLoaded', function() {
             guardOrScrollToRegister(e);
             return;
         }
-        
-        // Normalize internal URL
-        try {
-            const url = new URL(href, location.href);
-            if (url.origin === location.origin) {
-                // Allow scrolling to in-page anchors on the same page
-                if (href.startsWith('#')) return;
-                
-                // Allow only specific informational pages and admin without forcing registration
-                const p = url.pathname;
-                const infoPaths = new Set([
-                    '/',
-                    '/index.html',
-                    '/Pages/about.html',
-                    '/Pages/help.html',
-                    '/Pages/faq.html'
-                ]);
-                
-                if (p.startsWith('/dashboard/admin/') || p === '/dashboard/admin' || infoPaths.has(p)) {
-                    return;
-                }
-                
-                // Protected paths that require authentication
-                const protectedPaths = [
-                    '/Pages/ios/',
-                    '/Pages/android/',
-                    '/Pages/windows/',
-                    '/Pages/web-panel/',
-                    '/Pages/python-panel.html',
-                    '/Pages/openvpn.html',
-                    '/Pages/dns.html',
-                    '/Pages/wireguard.html'
-                ];
-                
-                if (protectedPaths.some(path => p.startsWith(path)) && !AUTH.authenticated) {
-                    guardOrScrollToRegister(e);
-                    return;
-                }
-            }
-        } catch {
-            // If URL parsing fails, guard conservatively for non-info pages
-            if (!href.startsWith('#') && !AUTH.authenticated) {
-                guardOrScrollToRegister(e);
-            }
-        }
+        // Otherwise, allow free navigation within site without forcing auth
     }, true);
 
     // Enhanced article and content card protection
@@ -737,6 +815,59 @@ document.addEventListener('DOMContentLoaded', function() {
     }, true);
 
     window.addEventListener('scroll', updateActiveNavLink);
+
+    // =====================
+    // OS Apps Renderer
+    // =====================
+    async function renderOsApps() {
+        try {
+            const path = (location.pathname || '').toLowerCase();
+            let os = null;
+            if (path.includes('/pages/ios')) os = 'ios';
+            else if (path.includes('/pages/android')) os = 'android';
+            else if (path.includes('/pages/windows')) os = 'windows';
+            if (!os) return; // Only render on OS pages
+
+            const res = await fetch('/apps.json', { cache: 'no-store' });
+            if (!res.ok) return;
+            const data = await res.json().catch(() => null);
+            if (!data || !Array.isArray(data.apps)) return;
+
+            const apps = data.apps.filter(app => Array.isArray(app.os) && app.os.includes(os));
+            if (!apps.length) return;
+
+            const container = document.querySelector('.section .container');
+            if (!container) return;
+
+            // Create grid
+            let grid = document.getElementById('apps-grid');
+            if (!grid) {
+                grid = document.createElement('div');
+                grid.id = 'apps-grid';
+                grid.className = 'app-grid';
+                // insert after .section-header if exists
+                const sectionHeader = container.querySelector('.section-header');
+                if (sectionHeader && sectionHeader.parentElement === container) {
+                    sectionHeader.insertAdjacentElement('afterend', grid);
+                } else {
+                    container.appendChild(grid);
+                }
+            }
+
+            grid.innerHTML = apps.map(app => `
+                <div class="app-card">
+                    <img class="app-icon" src="/${app.icon}" alt="${app.name}" loading="lazy" />
+                    <div class="app-name">${app.name}</div>
+                    <a class="btn btn-primary" href="${app.link || '#'}" target="_blank" rel="noopener">دانلود</a>
+                </div>
+            `).join('');
+        } catch (e) {
+            console.warn('OS apps render failed:', e);
+        }
+    }
+
+    // Render apps after auth/UI init to ensure DOM is ready
+    renderOsApps();
 
     // Animate hero elements on load
     function animateHeroElements() {
@@ -1141,7 +1272,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    addSkipLink();
+    // Removed skip link injection to avoid visible text on some pages
+    // addSkipLink();
     enhanceAccessibility();
 
     // Enhanced Intersection Observer for animations

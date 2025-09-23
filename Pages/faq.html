@@ -24,15 +24,25 @@
     </div>
   </div>
   <div id="main-content" class="main-content hidden">
-    <header class="header">
+    <header class="header" role="banner">
       <nav class="navbar">
-        <div class="nav-brand"><a href="../index.html" class="logo-link"><h1 class="logo"><span lang="en">Pro TooLs</span></h1></a></div>
-        <ul class="nav-menu">
-          <li><a class="nav-link" href="../index.html"><span class="nav-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1v-5H10v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-10.5z" fill="currentColor"/></svg></span><span>خانه</span></a></li>
-          <li><a class="nav-link" href="about.html">درباره ما</a></li>
-          <li><a class="nav-link" href="help.html">راهنما</a></li>
-        </ul>
-        <div class="hamburger"><span></span><span></span><span></span></div>
+        <div class="nav-brand">
+          <a href="../index.html" class="logo-link" aria-label="Pro TooLs">
+            <img src="../icons/Logo.svg" alt="Pro TooLs" class="logo-img" />
+          </a>
+        </div>
+        <div class="nav-actions" role="group" aria-label="ورود و حساب کاربری">
+          <a id="headerDashboardLink" href="/dashboard/user/" class="btn btn-secondary hide" style="display:none;">حساب کاربری</a>
+          <button id="openAuthModalHeaderBtn" class="btn btn-primary">ورود / ثبت‌نام</button>
+        </div>
+        <nav role="navigation" aria-label="منوی اصلی">
+          <ul id="nav-menu" class="nav-menu">
+            <li><a class="nav-link" href="../index.html"><span class="nav-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1v-5H10v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-10.5z" fill="currentColor"/></svg></span><span>خانه</span></a></li>
+            <li><a class="nav-link" href="./about.html">درباره ما</a></li>
+            <li><a class="nav-link" href="./help.html">راهنما</a></li>
+          </ul>
+        </nav>
+        <button class="hamburger" aria-label="منوی ناوبری" aria-expanded="false" aria-controls="nav-menu"><span></span><span></span><span></span></button>
       </nav>
     </header>
     <div class="scroll-progress" aria-hidden="true"><span></span></div>

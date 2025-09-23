@@ -233,7 +233,10 @@
         <div class="user-title">داشبورد کاربری</div>
         <div id="userMeta" class="user-subtitle">در حال بارگذاری...</div>
       </div>
-      <div id="planBadge" class="plan-badge plan-free">طرح: رایگان</div>
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap: wrap;">
+        <a class="btn btn-secondary" href="/">بازگشت به سایت</a>
+        <div id="planBadge" class="plan-badge plan-free">طرح: رایگان</div>
+      </div>
     </div>
 
     <!-- آمار کاربر -->
@@ -353,10 +356,10 @@
       emptyState.style.display = 'none';
       container.innerHTML = favorites.map(fav => `
         <div class="favorite-item" data-id="${fav.id}">
-          <div>
+          <a href="${fav.url || '/'}" style="flex:1; text-decoration:none;">
             <div class="favorite-title">${fav.title}</div>
             <div class="favorite-type">${fav.type === 'article' ? 'مقاله' : 'کانفیگ'}</div>
-          </div>
+          </a>
           <button class="remove-favorite" onclick="removeFavorite('${fav.id}')" title="حذف از علاقه‌مندی‌ها">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M18 6L6 18M6 6l12 12"></path>
@@ -414,6 +417,7 @@
           </svg>
           طرح: طلایی
         `;
+        try { localStorage.setItem('user_plan', 'gold'); } catch {}
       } else {
         badge.classList.add('plan-free');
         badge.innerHTML = `
@@ -423,6 +427,7 @@
           </svg>
           طرح: رایگان
         `;
+        try { localStorage.setItem('user_plan', 'free'); } catch {}
       }
     }
 
@@ -435,7 +440,9 @@
       
       currentUser = a.user;
       document.getElementById('userMeta').textContent = `شناسه تلگرام: ${currentUser.telegram_id}`;
-      setPlanBadge(currentUser.plan);
+      // Persisted GOLD fallback
+      const persistedPlan = (localStorage.getItem('user_plan') || '').toLowerCase();
+      setPlanBadge(currentUser.plan === 'gold' || persistedPlan === 'gold' ? 'gold' : 'free');
       document.getElementById('rawUser').textContent = JSON.stringify(currentUser, null, 2);
       
       await loadFavorites();
@@ -500,6 +507,7 @@
           document.getElementById('rawUser').textContent = JSON.stringify(data.user, null, 2);
           document.getElementById('goldCode').value = '';
           showNotification('حساب طلایی فعال شد!', 'success');
+          try { localStorage.setItem('user_plan', 'gold'); } catch {}
         } else {
           const errorMsg = data.error === 'INVALID_CODE' ? 'کد نادرست است' : (data.error || 'خطا در فعال‌سازی');
           msg.textContent = errorMsg;
