@@ -1067,8 +1067,9 @@
         const c = data.countries[idx];
         const merged = Array.from(new Set([...(c.servers||[]), ...serversFromForm]));
         c.servers = merged;
+        // Auto-calc: total and available reflect servers length; newly added servers => fully available
         c.total = merged.length;
-        c.available = Math.min(c.available||0, c.total);
+        c.available = merged.length;
         if (name && name.trim()) c.name = name.trim();
         data.countries[idx] = c;
       } else {
@@ -1157,13 +1158,8 @@
         const data = await api.get('scanner/countries.json');
         return JSON.parse(data);
       } catch (e) {
-        console.warn('No scanner countries data found, using defaults');
-        return {
-          countries: [
-            { code: 'GB', name: 'انگلستان', total: 25, available: 18, servers: ['1.1.1.1', '8.8.8.8'] },
-            { code: 'DE', name: 'آلمان', total: 30, available: 22, servers: ['9.9.9.9', '1.0.0.1'] }
-          ]
-        };
+        // Start from zero if no data exists
+        return { countries: [] };
       }
     },
 
@@ -1177,6 +1173,21 @@
         return JSON.parse(data);
       } catch (e) {
         return { allocations: [] };
+      }
+    },
+
+    async resetAll() {
+      try {
+        // Clear countries and allocations in KV
+        await api.put('scanner/countries.json', JSON.stringify({ countries: [] }, null, 2));
+        try {
+          await api.put('scanner/allocations.json', JSON.stringify({ allocations: [] }, null, 2));
+        } catch {}
+        await this.refreshData();
+        alert('همه داده‌های اسکنر ریست شد');
+      } catch (e) {
+        console.error('Error resetting scanner data:', e);
+        alert('خطا در ریست داده‌ها');
       }
     },
 
@@ -1322,17 +1333,19 @@
       try {
         const data = await this.loadCountries();
         const countryIndex = data.countries.findIndex(c => c.code === formData.code);
-        
+
         const servers = formData.servers
           .split('\n')
           .map(s => s.trim())
           .filter(s => s.length > 0);
 
+        // Auto-calc totals from servers list and set all available
+        const totalCount = servers.length;
         const countryData = {
           code: formData.code.toUpperCase(),
           name: formData.name,
-          total: parseInt(formData.total) || 0,
-          available: parseInt(formData.available) || 0,
+          total: totalCount,
+          available: totalCount,
           servers: servers
         };
 
@@ -1369,6 +1382,15 @@
       const addServersBtn = $('#btn-add-servers');
       if (addServersBtn) {
         addServersBtn.addEventListener('click', () => this.showServersModal());
+      }
+
+      // Reset all button
+      const resetBtn = $('#btn-scanner-reset');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', async () => {
+          if (!confirm('آیا مطمئن هستید که می‌خواهید تمام کشورها و آدرس‌ها را پاک کنید؟ این عملیات غیرقابل بازگشت است.')) return;
+          await this.resetAll();
+        });
       }
 
       // Servers modal controls
