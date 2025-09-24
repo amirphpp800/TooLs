@@ -263,6 +263,25 @@
       <div class="card">
         <h3 class="card-title">
           <svg class="card-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4 6h16v12H4z"/>
+          </svg>
+          سرورهای من (DNS)
+        </h3>
+        <div id="myServersEmpty" class="favorites-empty" style="display:none;">
+          <div style="margin-bottom:8px;">هنوز سروری دریافت نکرده‌اید</div>
+          <div class="muted" style="margin-bottom:12px;">از بخش «دی ان اس (DNS)» یک سرور دریافت کنید تا اینجا نمایش داده شود.</div>
+          <a class="btn btn-primary" href="/Pages/dns.html">رفتن به صفحه DNS</a>
+        </div>
+        <div id="myServersList"></div>
+        <div style="margin-top:16px; display:flex; gap:8px;">
+          <button id="refreshServers" class="btn btn-outline">به‌روزرسانی سرورها</button>
+          <a class="btn btn-secondary" href="/Pages/dns.html">دریافت سرور جدید</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
           </svg>
           علاقه‌مندی‌ها
@@ -321,6 +340,7 @@
   <script>
     let currentUser = null;
     let favorites = [];
+    let myServers = [];
 
     async function fetchAuth() {
       try {
@@ -446,6 +466,7 @@
       document.getElementById('rawUser').textContent = JSON.stringify(currentUser, null, 2);
       
       await loadFavorites();
+      await loadMyServers();
       updateStats();
     }
 
@@ -476,6 +497,61 @@
     }
 
     init();
+
+    // سرورهای من (DNS)
+    async function loadMyServers() {
+      try {
+        const res = await fetch('/api/scanner/my', { credentials: 'include' });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && Array.isArray(data?.servers)) {
+          myServers = data.servers;
+          renderMyServers();
+        } else {
+          myServers = [];
+          renderMyServers();
+        }
+      } catch {
+        myServers = [];
+        renderMyServers();
+      }
+    }
+
+    function renderMyServers() {
+      const empty = document.getElementById('myServersEmpty');
+      const list = document.getElementById('myServersList');
+      if (!list || !empty) return;
+      if (!myServers.length) {
+        empty.style.display = 'block';
+        list.innerHTML = '';
+        return;
+      }
+      empty.style.display = 'none';
+      list.innerHTML = myServers.map((s, idx) => `
+        <div class="favorite-item" style="gap:12px; align-items:center;">
+          <div style="flex:1;">
+            <div class="favorite-title">${(s.country || '').toString()} <span class="country-code" style="margin-right:6px;">${(s.code||'').toUpperCase()}</span></div>
+            <div class="favorite-type">DNS</div>
+          </div>
+          <code style="direction:ltr; user-select:all;">${s.address}</code>
+          <button class="btn btn-primary" data-copy-address="${s.address}" title="کپی">کپی</button>
+        </div>
+      `).join('');
+      // wire copy buttons
+      list.querySelectorAll('[data-copy-address]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const ip = btn.getAttribute('data-copy-address');
+          try { await navigator.clipboard.writeText(ip); showNotification('آدرس کپی شد', 'success'); } catch { showNotification('کپی ناموفق', 'error'); }
+        });
+      });
+    }
+
+    document.getElementById('refreshServers').addEventListener('click', async () => {
+      const b = document.getElementById('refreshServers');
+      b.disabled = true; b.textContent = 'در حال به‌روزرسانی...';
+      await loadMyServers();
+      b.disabled = false; b.textContent = 'به‌روزرسانی سرورها';
+      showNotification('لیست سرورها به‌روزرسانی شد', 'success');
+    });
 
     // فعال‌سازی حساب طلایی
     document.getElementById('btnActivateGold').addEventListener('click', async () => {

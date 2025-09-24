@@ -892,8 +892,7 @@
                 });
                 const data = await res.json().catch(()=>({}));
                 if (res.ok && data?.address) {
-                  showToast(`سرور شما: ${data.address}`);
-                  try { await navigator.clipboard.writeText(data.address); } catch {}
+                  showAllocatedServerModal({ address: data.address, country: data.country, code: data.code });
                 } else {
                   showToast(data?.error === 'NO_AVAILABLE_SERVER' ? 'سرور آزاد موجود نیست' : 'خطا در دریافت سرور');
                 }
@@ -906,6 +905,57 @@
           });
         }
       }
+
+      // --- Lightweight modal for allocated server result ---
+      function ensureAllocModal() {
+        if (document.getElementById('allocModal')) return;
+        const backdrop = document.createElement('div');
+        backdrop.id = 'allocModal';
+        backdrop.className = 'modal-backdrop';
+        backdrop.innerHTML = `
+          <div class="modal">
+            <div class="modal-header">
+              <div class="modal-title">سرور شما آماده است</div>
+              <div class="modal-close" id="allocModalClose" aria-label="بستن">×</div>
+            </div>
+            <div class="modal-body">
+              <div id="allocModalContent"></div>
+            </div>
+          </div>`;
+        document.body.appendChild(backdrop);
+        const close = () => backdrop.classList.remove('active');
+        backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
+        backdrop.querySelector('#allocModalClose')?.addEventListener('click', close);
+      }
+
+      function showAllocatedServerModal({ address, country, code }) {
+        ensureAllocModal();
+        const modal = document.getElementById('allocModal');
+        const content = document.getElementById('allocModalContent');
+        if (!modal || !content) return;
+        content.innerHTML = `
+          <div class="glass-card" style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="font-weight:700;">کشور:</div>
+              <div><span class="country-code">${(code||'').toUpperCase()}</span> <span style="opacity:.9;">${country||''}</span></div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="font-weight:700;">آدرس سرور:</div>
+              <code style="direction:ltr; user-select:all;">${address}</code>
+              <button class="btn btn-primary" id="allocCopyBtn">کپی</button>
+            </div>
+            <div style="font-size:12px; opacity:.8;">این سرور در حساب کاربری شما ذخیره شد. می‌توانید از بخش «حساب کاربری» نیز به آن دسترسی داشته باشید.</div>
+          </div>`;
+        modal.classList.add('active');
+        // Wire copy
+        setTimeout(() => {
+          const copyBtn = document.getElementById('allocCopyBtn');
+          copyBtn?.addEventListener('click', async () => {
+            try { await navigator.clipboard.writeText(address); showToast('آدرس سرور کپی شد'); } catch { showToast('کپی موفق نبود'); }
+          });
+        }, 50);
+      }
+
     })();
   </script>
 </body>
