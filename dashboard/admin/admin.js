@@ -1029,6 +1029,126 @@
 
   // Scanner Management Module
   const scannerManager = {
+    // Quick Add IPv4 Servers Modal methods (moved from api)
+    async showServersModal() {
+      const modal = $('#servers-modal');
+      await this.populateCountrySelect();
+      // Reset custom fields visibility
+      const wrapCode = document.getElementById('servers-custom-code-wrap');
+      const wrapName = document.getElementById('servers-custom-name-wrap');
+      if (wrapCode) wrapCode.style.display = 'none';
+      if (wrapName) wrapName.style.display = 'none';
+      if (modal) modal.style.display = 'flex';
+    },
+    hideServersModal() {
+      const modal = $('#servers-modal');
+      if (modal) modal.style.display = 'none';
+    },
+    isIPv4(addr) {
+      const re = /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)$/;
+      return re.test(addr);
+    },
+    async addIPv4Servers({ code, name, list }) {
+      const cc = (code||'').toUpperCase().trim();
+      if (!cc || cc.length !== 2) throw new Error('کد کشور نامعتبر است');
+      const serversFromForm = (list||'')
+        .split('\n')
+        .map(s=>s.trim())
+        .filter(Boolean)
+        .filter(s=>this.isIPv4(s));
+      if (!serversFromForm.length) throw new Error('هیچ IPv4 معتبری وارد نشده است');
+      const data = await this.loadCountries();
+      data.countries = data.countries || [];
+      const idx = data.countries.findIndex(c=>c.code === cc);
+      if (idx >= 0) {
+        const c = data.countries[idx];
+        const merged = Array.from(new Set([...(c.servers||[]), ...serversFromForm]));
+        c.servers = merged;
+        c.total = merged.length;
+        c.available = Math.min(c.available||0, c.total);
+        if (name && name.trim()) c.name = name.trim();
+        data.countries[idx] = c;
+      } else {
+        const countryName = (name||'').trim() || cc;
+        const merged = Array.from(new Set(serversFromForm));
+        data.countries.push({ code: cc, name: countryName, total: merged.length, available: merged.length, servers: merged });
+      }
+      await this.saveCountries(data);
+      await this.refreshData();
+    },
+    countryCatalog() {
+      // Minimal yet practical catalog with Persian names
+      return [
+        { code: 'IR', name: 'ایران' },
+        { code: 'TR', name: 'ترکیه' },
+        { code: 'AE', name: 'امارات متحده عربی' },
+        { code: 'SA', name: 'عربستان سعودی' },
+        { code: 'QA', name: 'قطر' },
+        { code: 'OM', name: 'عمان' },
+        { code: 'BH', name: 'بحرین' },
+        { code: 'IQ', name: 'عراق' },
+        { code: 'JO', name: 'اردن' },
+        { code: 'LB', name: 'لبنان' },
+        { code: 'EG', name: 'مصر' },
+        { code: 'US', name: 'ایالات متحده آمریکا' },
+        { code: 'CA', name: 'کانادا' },
+        { code: 'GB', name: 'انگلستان' },
+        { code: 'DE', name: 'آلمان' },
+        { code: 'FR', name: 'فرانسه' },
+        { code: 'IT', name: 'ایتالیا' },
+        { code: 'ES', name: 'اسپانیا' },
+        { code: 'NL', name: 'هلند' },
+        { code: 'SE', name: 'سوئد' },
+        { code: 'NO', name: 'نروژ' },
+        { code: 'FI', name: 'فنلاند' },
+        { code: 'RU', name: 'روسیه' },
+        { code: 'IN', name: 'هند' },
+        { code: 'PK', name: 'پاکستان' },
+        { code: 'CN', name: 'چین' },
+        { code: 'JP', name: 'ژاپن' },
+        { code: 'KR', name: 'کره جنوبی' },
+        { code: 'SG', name: 'سنگاپور' },
+        { code: 'HK', name: 'هنگ کنگ' },
+        { code: 'AU', name: 'استرالیا' },
+        { code: 'NZ', name: 'نیوزیلند' },
+        { code: 'BR', name: 'برزیل' },
+        { code: 'AR', name: 'آرژانتین' },
+        { code: 'MX', name: 'مکزیک' },
+        { code: 'ZA', name: 'آفریقای جنوبی' }
+      ];
+    },
+    async populateCountrySelect() {
+      const sel = document.getElementById('servers-country-select');
+      if (!sel) return;
+      // Clear all options except the first (placeholder) and last (custom)
+      const placeholder = sel.querySelector('option[value=""]');
+      const custom = sel.querySelector('option[value="custom"]');
+      sel.innerHTML = '';
+      if (placeholder) sel.appendChild(placeholder);
+
+      // Merge catalog with existing data from KV
+      let existing = [];
+      try {
+        const data = await this.loadCountries();
+        existing = (data.countries||[]).map(c=>({ code: c.code, name: c.name }));
+      } catch {}
+      const catalog = this.countryCatalog();
+      const map = new Map();
+      [...catalog, ...existing].forEach(c => {
+        if (c?.code) map.set(c.code.toUpperCase(), { code: c.code.toUpperCase(), name: c.name || c.code.toUpperCase() });
+      });
+      // Sort alphabetically by Persian name
+      const list = Array.from(map.values()).sort((a,b)=> (a.name||'').localeCompare(b.name||'', 'fa'));
+      list.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.code;
+        opt.textContent = `${c.name} (${c.code})`;
+        opt.setAttribute('data-name', c.name);
+        sel.appendChild(opt);
+      });
+      if (custom) sel.appendChild(custom);
+      sel.selectedIndex = 0; // placeholder
+    },
     async loadCountries() {
       try {
         const data = await api.get('scanner/countries.json');
@@ -1240,6 +1360,84 @@
       const addBtn = $('#btn-add-country');
       if (addBtn) {
         addBtn.addEventListener('click', () => this.showCountryModal());
+      }
+
+      // Quick add servers button
+      const addServersBtn = $('#btn-add-servers');
+      if (addServersBtn) {
+        addServersBtn.addEventListener('click', () => this.showServersModal());
+      }
+
+      // Servers modal controls
+      const serversClose = $('#servers-modal-close');
+      const serversCancel = $('#servers-cancel');
+      if (serversClose) serversClose.addEventListener('click', () => this.hideServersModal());
+      if (serversCancel) serversCancel.addEventListener('click', () => this.hideServersModal());
+
+      // Autofill country name if code exists (manual code entry)
+      const codeInput = $('#servers-country-code');
+      if (codeInput) {
+        codeInput.addEventListener('input', async () => {
+          const cc = codeInput.value.toUpperCase();
+          try {
+            const data = await this.loadCountries();
+            const found = (data.countries||[]).find(c=>c.code === cc);
+            if (found) {
+              const nameInput = $('#servers-country-name');
+              if (nameInput) nameInput.value = found.name || '';
+            }
+          } catch {}
+        });
+      }
+
+      // Country select change handler (show/hide custom code/name)
+      const selCountry = document.getElementById('servers-country-select');
+      const customCodeWrap = document.getElementById('servers-custom-code-wrap');
+      const customNameWrap = document.getElementById('servers-custom-name-wrap');
+      const codeInputEl = document.getElementById('servers-country-code');
+      const nameInputEl = document.getElementById('servers-country-name');
+      if (selCountry) {
+        selCountry.addEventListener('change', () => {
+          const v = selCountry.value;
+          if (v === 'custom') {
+            if (customCodeWrap) customCodeWrap.style.display = '';
+            if (customNameWrap) customNameWrap.style.display = '';
+            if (codeInputEl) codeInputEl.value = '';
+            if (nameInputEl) nameInputEl.value = '';
+          } else {
+            if (customCodeWrap) customCodeWrap.style.display = 'none';
+            if (customNameWrap) customNameWrap.style.display = 'none';
+            if (codeInputEl) codeInputEl.value = v;
+            const opt = selCountry.selectedOptions?.[0];
+            const nm = opt?.getAttribute('data-name') || '';
+            if (nameInputEl) nameInputEl.value = nm;
+          }
+        });
+      }
+
+      // Servers form submission
+      const serversForm = document.getElementById('servers-form');
+      if (serversForm) {
+        serversForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          let code = '';
+          let name = '';
+          if (selCountry && selCountry.value && selCountry.value !== 'custom') {
+            code = selCountry.value;
+            name = selCountry.selectedOptions?.[0]?.getAttribute('data-name') || '';
+          } else {
+            code = document.getElementById('servers-country-code')?.value || '';
+            name = document.getElementById('servers-country-name')?.value || '';
+          }
+          const list = document.getElementById('servers-list')?.value?.trim() || '';
+          try {
+            await this.addIPv4Servers({ code, name, list });
+            this.hideServersModal();
+            alert('آدرس‌ها افزوده و ذخیره شد');
+          } catch (err) {
+            alert(err?.message || 'خطا در افزودن آدرس‌ها');
+          }
+        });
       }
 
       // Modal close buttons

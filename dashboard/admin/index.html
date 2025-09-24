@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>پنل مدیریت | Pro TooLs</title>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="/icons/webapp.svg" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/icons/webapp-512.png" />
+  <link rel="apple-touch-icon" href="/icons/webapp-512.png" />
   <link rel="stylesheet" href="admin.css" />
 </head>
 <body>
@@ -459,6 +463,7 @@
               <div class="group">
                 <button id="btn-scanner-refresh" class="btn btn-secondary">🔄 تازه‌سازی</button>
                 <button id="btn-add-country" class="btn btn-primary">+ افزودن کشور</button>
+                <button id="btn-add-servers" class="btn">➕ افزودن آدرس‌های IPv4</button>
               </div>
             </div>
 
@@ -535,6 +540,46 @@
                     <div class="actions" style="grid-column: 1/-1;">
                       <button type="submit" class="btn btn-primary">💾 ذخیره</button>
                       <button type="button" class="btn btn-secondary" id="country-cancel">انصراف</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Add IPv4 Servers Modal -->
+            <div id="servers-modal" class="modal-backdrop" style="display: none;">
+              <div class="modal">
+                <div class="modal-header">
+                  <h3 id="servers-modal-title">➕ افزودن آدرس‌های IPv4</h3>
+                  <button class="modal-close" id="servers-modal-close">×</button>
+                </div>
+                <div class="modal-body">
+                  <form id="servers-form" class="form form-grid">
+                    <label class="form-field">
+                      <span>انتخاب کشور</span>
+                      <select id="servers-country-select" class="input input-select-black">
+                        <option value="" disabled selected>— انتخاب کشور —</option>
+                        <!-- گزینه‌ها به‌صورت داینامیک از admin.js اضافه می‌شوند -->
+                        <option value="custom">سایر (ورود دستی کد کشور)</option>
+                      </select>
+                      <small>نام کامل کشور نمایش داده می‌شود. برای کشور جدید "سایر" را انتخاب کنید.</small>
+                    </label>
+                    <label class="form-field" id="servers-custom-code-wrap" style="display:none;">
+                      <span>کد کشور (۲ حرفی) - مثل GB, DE</span>
+                      <input type="text" id="servers-country-code" maxlength="2" style="text-transform: uppercase;" placeholder="کد کشور" />
+                    </label>
+                    <label class="form-field" id="servers-custom-name-wrap" style="display:none;">
+                      <span>نام کشور</span>
+                      <input type="text" id="servers-country-name" placeholder="نام کامل کشور" />
+                    </label>
+                    <div class="form-field" style="grid-column: 1/-1;">
+                      <span>لیست آدرس‌های IPv4 (هر خط یک آدرس)</span>
+                      <textarea id="servers-list" rows="8" placeholder="مثال:\n1.1.1.1\n8.8.8.8\n9.9.9.9"></textarea>
+                      <small>فقط IPv4 معتبر پذیرفته می‌شود. خطوط تکراری حذف می‌گردد.</small>
+                    </div>
+                    <div class="actions" style="grid-column: 1/-1;">
+                      <button type="submit" class="btn btn-primary">افزودن</button>
+                      <button type="button" class="btn btn-secondary" id="servers-cancel">انصراف</button>
                     </div>
                   </form>
                 </div>

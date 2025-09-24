@@ -209,6 +209,33 @@
   /* Mobile overlay - removed to prevent interference */
 }
 
+/* Global anti-overflow guards (apply on all screens) */
+html, body {
+  width: 100% !important;
+  overflow-x: hidden !important;
+}
+.header, .navbar, .main-content, .scroll-progress, .hero, .container, footer {
+  max-width: 100% !important;
+  overflow-x: clip !important;
+}
+/* Ensure media never exceed viewport */
+img, svg, video, canvas {
+  max-width: 100% !important;
+  height: auto;
+}
+
+/* Prevent dropdown from causing horizontal scroll on very small screens */
+@media (max-width: 420px) {
+  .dropdown-menu {
+    min-width: 0 !important;
+    width: calc(100vw - 24px) !important; /* 12px margin on each side */
+    right: 12px !important;
+    left: 12px !important;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+}
+
 /* OS Apps grid */
 .app-grid {
     display: grid;
@@ -792,6 +819,7 @@ img {
     min-height: 64px;
     position: relative;
     direction: ltr; /* layout left-to-right for Apple-like header structure */
+    overflow-x: clip; /* Prevent accidental horizontal overflow from children */
 }
 
 .nav-actions { 
