@@ -85,6 +85,7 @@
   const viewFiles = $('#view-files');
   const viewContentManager = $('#view-content-manager');
   const viewSettings = $('#view-settings');
+  const viewScanner = $('#view-scanner');
   
   // Enhanced view switching with animation
   function switchView(viewName) {
@@ -93,7 +94,7 @@
     if (targetBtn) targetBtn.classList.add('active');
     
     // Hide all views
-    const allViews = [viewDashboard, viewKV, viewPages, viewContacts, viewSponsors, viewPost, viewTemplates, viewFiles, viewContentManager, viewSettings];
+    const allViews = [viewDashboard, viewKV, viewPages, viewContacts, viewSponsors, viewPost, viewTemplates, viewFiles, viewContentManager, viewSettings, viewScanner];
     allViews.forEach(view => {
       if (view) view.hidden = true;
     });
@@ -109,7 +110,8 @@
       'templates': viewTemplates,
       'files': viewFiles,
       'content-manager': viewContentManager,
-      'settings': viewSettings
+      'settings': viewSettings,
+      'scanner': viewScanner
     };
     
     const targetView = viewMap[viewName];
@@ -118,6 +120,7 @@
       // Load data for specific views
       if (viewName === 'dashboard') loadDashboardData();
       if (viewName === 'content-manager') loadContentManager();
+      if (viewName === 'scanner') window.scannerManager?.refreshData?.();
     }
   }
   
