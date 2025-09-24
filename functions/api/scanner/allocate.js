@@ -19,18 +19,43 @@ export async function onRequestPost({ request, env }) {
     }
   } catch {}
 
-  // Load source list
-  const raw = await env.DATABASE.get('scanner/servers.json');
-  let list = [];
-  try { list = JSON.parse(raw || '[]'); } catch { list = []; }
-  if (!Array.isArray(list)) list = [];
+  // Load servers from admin-managed KV structure first, fallback to legacy list
+  let items = [];
+  try {
+    const rawCountries = await env.DATABASE.get('scanner/countries.json');
+    if (rawCountries) {
+      const data = JSON.parse(rawCountries || '{}');
+      const countries = Array.isArray(data?.countries) ? data.countries : [];
+      // Flatten to items list
+      items = countries.flatMap(c => {
+        const code = String(c?.code || '').trim();
+        const name = String(c?.name || code || 'unknown').trim();
+        const servers = Array.isArray(c?.servers) ? c.servers : [];
+        return servers.map(s => ({
+          address: String(s?.ip || s?.address || s || '').trim(),
+          country: name,
+          code: code.toLowerCase(),
+        }));
+      }).filter(x => x.address);
+    }
+  } catch {
+    // ignore, will fallback below
+  }
 
-  // Normalize and filter by country if provided
-  const items = list.map(it => ({
-    address: String(it.address || it.ip || '').trim(),
-    country: String(it.country || it.name || 'unknown').trim(),
-    code: String(it.code || it.cc || '').trim().toLowerCase(),
-  })).filter(it => it.address);
+  if (!items.length) {
+    // Fallback: legacy flat servers list
+    try {
+      const rawLegacy = await env.DATABASE.get('scanner/servers.json');
+      let list = [];
+      try { list = JSON.parse(rawLegacy || '[]'); } catch { list = []; }
+      if (!Array.isArray(list)) list = [];
+      items = list.map(it => ({
+        address: String(it.address || it.ip || '').trim(),
+        country: String(it.country || it.name || 'unknown').trim(),
+        code: String(it.code || it.cc || '').trim().toLowerCase(),
+      })).filter(it => it.address);
+    } catch {}
+  }
 
   const byCountry = (codeOrName) => items.filter(it => {
     if (!codeOrName) return true;
@@ -54,6 +79,9 @@ export async function onRequestPost({ request, env }) {
 
   // 1) If user already has an allocation in the requested country, return it
   const pool = byCountry(country);
+  if (!pool.length) {
+    return json({ error: 'NO_AVAILABLE_SERVER' }, 404);
+  }
   for (const it of pool) {
     const alloc = await loadAlloc(it.address);
     if (alloc.includes(userId)) {
@@ -73,3 +101,4 @@ export async function onRequestPost({ request, env }) {
 
   return json({ error: 'NO_AVAILABLE_SERVER' }, 404);
 }
+

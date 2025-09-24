@@ -224,17 +224,18 @@ img, svg, video, canvas {
   height: auto;
 }
 
-/* Prevent dropdown from causing horizontal scroll on very small screens */
-@media (max-width: 420px) {
-  .dropdown-menu {
-    min-width: 0 !important;
-    width: calc(100vw - 24px) !important; /* 12px margin on each side */
-    right: 12px !important;
-    left: 12px !important;
-    box-sizing: border-box;
-    overflow-x: hidden;
+  /* Prevent dropdown from causing horizontal scroll on very small screens */
+  @media (max-width: 420px) {
+    .dropdown-menu {
+      min-width: 0 !important;
+      width: auto !important;
+      max-width: calc(100% - 24px) !important; /* avoid 100vw to prevent scrollbar-based overflow */
+      right: 12px !important;
+      left: 12px !important;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
   }
-}
 
 /* OS Apps grid */
 .app-grid {
