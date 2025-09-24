@@ -719,7 +719,9 @@
             const res = await fetch('/api/scanner', { cache: 'no-cache' });
             if (res.ok) {
               const data = await res.json();
-              if (data && (Array.isArray(data.countries) || data.serversByCountry)) {
+              const hasCountries = Array.isArray(data?.countries) && data.countries.length > 0;
+              const hasServers = data?.serversByCountry && typeof data.serversByCountry === 'object' && Object.keys(data.serversByCountry).length > 0;
+              if (hasCountries || hasServers) {
                 renderCountries(data?.countries || [], data?.serversByCountry || {});
                 return;
               }
