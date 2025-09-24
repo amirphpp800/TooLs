@@ -3,302 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro TooLs - ابزارهای دیجیتال</title>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; connect-src 'self' https:; frame-ancestors 'self'; base-uri 'self'; form-action 'self'">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <meta name="theme-color" content="#32374A">
-    <link rel="manifest" href="manifest.webmanifest">
-    <link rel="icon" type="image/svg+xml" href="icons/webapp.svg">
-    <!-- Fallback favicons for browsers that don't support SVG favicons well -->
-    <link rel="icon" type="image/png" sizes="512x512" href="icons/webapp-512.png">
-    <!-- Apple touch icon for iOS Add to Home Screen -->
-    <link rel="apple-touch-icon" href="icons/webapp-512.png">
-    <link rel="stylesheet" href="styles.css">
+    <title>سایت در حال به‌روزرسانی</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            direction: rtl;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-top: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .back-link {
+            margin-top: 2rem;
+            display: inline-block;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            p {
+                font-size: 1rem;
+            }
+            
+            .icon {
+                font-size: 3rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loading" class="loading-screen">
-        <div class="loading-content">
-            <div class="loading-logo"><span lang="en">Pro TooLs</span></div>
-            <div class="loading-spinner"></div>
-            <p class="loading-text">در حال بارگذاری...</p>
-        </div>
+    <div class="container">
+        <div class="icon">🔧</div>
+        <h1>سایت در حال به‌روزرسانی</h1>
+        <p>ما در حال بهبود سایت هستیم تا تجربه بهتری برای شما فراهم کنیم. لطفاً کمی صبر کنید.</p>
+        <div class="loader"></div>
+        <p style="font-size: 0.9rem; margin-top: 1.5rem; margin-bottom: 0;">به زودی برمی‌گردیم!</p>
+        <a href="mailto:support@example.com" class="back-link">تماس با پشتیبانی</a>
     </div>
 
-    <!-- Main Content -->
-    <main id="main-content" class="main-content hidden" role="main" aria-label="محتوای اصلی سایت">
-        <!-- Header -->
-        <header class="header" role="banner">
-            <nav class="navbar">
-                <div class="nav-brand">
-                    <a href="index.html" class="logo-link" aria-label="Pro TooLs">
-                        <img src="icons/Logo.svg" alt="Pro TooLs" class="logo-img" />
-                    </a>
-                </div>
-                <div class="nav-actions" role="group" aria-label="ورود و حساب کاربری">
-                    <a id="headerDashboardLink" href="/dashboard/user/" class="btn btn-secondary hide" style="display:none;">حساب کاربری</a>
-                    <button id="openAuthModalHeaderBtn" class="btn btn-primary">ورود / ثبت‌نام</button>
-                </div>
-
-                <nav role="navigation" aria-label="منوی اصلی">
-                <ul id="nav-menu" class="nav-menu">
-                    <li>
-                        <a href="index.html" class="nav-link active">
-                            <span class="nav-icon" aria-hidden="true">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1v-5H10v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-10.5z" fill="currentColor"/></svg>
-                            </span>
-                            <span>خانه</span>
-                        </a>
-                    </li>
-                    <li class="dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" id="osDropdown">
-                            <span class="nav-icon" aria-hidden="true">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5h18v4H3V5zm0 5h18v4H3v-4zm0 5h18v4H3v-4z" fill="currentColor"/></svg>
-                            </span>
-                            <span>سیستم عامل</span>
-                            <span class="dropdown-arrow">▼</span>
-                        </a>
-                        <div class="dropdown-menu" id="osMenu" role="menu" aria-labelledby="osDropdown">
-                            <a href="Pages/ios/" class="dropdown-item" role="menuitem">
-                                <span class="item-icon" aria-hidden="true">
-                                    <img src="icons/apple.svg" alt="Apple" />
-                                </span>
-                                آیفون
-                            </a>
-                            <a href="Pages/android/" class="dropdown-item" role="menuitem">
-                                <span class="item-icon" aria-hidden="true">
-                                    <img src="icons/android.svg" alt="Android" />
-                                </span>
-                                اندروید
-                            </a>
-                            <a href="Pages/windows/" class="dropdown-item" role="menuitem">
-                                <span class="item-icon" aria-hidden="true">
-                                    <img src="icons/windows.svg" alt="Windows" />
-                                </span>
-                                ویندوز
-                            </a>
-                        </div>
-                    </li>
-                    <li class="dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" id="panelsDropdown">
-                            <span class="nav-icon" aria-hidden="true">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5h8v6H3V5zm10 0h8v6h-8V5zM3 13h8v6H3v-6zm10 0h8v6h-8v-6z" fill="currentColor"/></svg>
-                            </span>
-                            <span>پنل ها</span>
-                            <span class="dropdown-arrow">▼</span>
-                        </a>
-                        <div class="dropdown-menu" id="panelsMenu" role="menu" aria-labelledby="panelsDropdown">
-                            <a href="Pages/web-panel/" class="dropdown-item" role="menuitem">
-                                <span class="item-icon" aria-hidden="true">
-                                    <img src="icons/html-5.svg" alt="HTML5" />
-                                </span>
-                                سایتی
-                            </a>
-                            <a href="Pages/python-panel.html" class="dropdown-item" role="menuitem">
-                                <span class="item-icon" aria-hidden="true">
-                                    <img src="icons/python.svg" alt="Python" />
-                                </span>
-                                پایتونی
-                            </a>
-                        </div>
-                    </li>
-                    <li class="dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" id="serversDropdown">
-                            <span class="nav-icon" aria-hidden="true">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h16v6H4V4zm0 10h16v6H4v-6zm3 1v2h2v-2H7zM7 5v2h2V5H7z" fill="currentColor"/></svg>
-                            </span>
-                            <span>سرور اختصاصی</span>
-                            <span class="dropdown-arrow">▼</span>
-                        </a>
-                        <div class="dropdown-menu" id="serversMenu" role="menu" aria-labelledby="serversDropdown">
-                            <a href="Pages/openvpn.html" class="dropdown-item" role="menuitem">
-                                <span class="item-icon" aria-hidden="true">
-                                    <img src="icons/openvpn.svg" alt="OpenVPN" />
-                                </span>
-                                اوپن وی پی ان
-                            </a>
-                            <a href="Pages/dns.html" class="dropdown-item" role="menuitem">
-                                <span class="item-icon" aria-hidden="true">
-                                    <img src="icons/dns.png" alt="DNS" />
-                                </span>
-                                دی ان اس
-                            </a>
-                            <a href="Pages/wireguard.html" class="dropdown-item" role="menuitem">
-                                <span class="item-icon" aria-hidden="true">
-                                    <img src="icons/wireguard.svg" alt="WireGuard" />
-                                </span>
-                                وایرگارد
-                            </a>
-                        </div>
-                    </li>
-                    
-                    <li>
-                        <a href="Pages/about.html" class="nav-link">
-                            <span class="nav-icon" aria-hidden="true">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm-7 9a7 7 0 0114 0H5z" fill="currentColor"/></svg>
-                            </span>
-                            <span>درباره ما</span>
-                        </a>
-                    </li>
-                    <li id="mobileAuthItem">
-                        <a id="mobileAuthLink" href="#register" class="nav-link">
-                            <span class="nav-icon" aria-hidden="true">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M15 8a5 5 0 11-10 0 5 5 0 0110 0z" fill="currentColor"/>
-                                    <path d="M2 20a7 7 0 0114 0v1a1 1 0 01-1 1H3a1 1 0 01-1-1v-1z" fill="currentColor"/>
-                                    <path d="M19 7v-2a1 1 0 112 0v2h2a1 1 0 110 2h-2v2a1 1 0 11-2 0V9h-2a1 1 0 110-2h2z" fill="currentColor"/>
-                                </svg>
-                            </span>
-                            <span id="mobileAuthText">ورود / ثبت‌نام</span>
-                        </a>
-                    </li>
-                </ul>
-                </nav>
-
-                <button class="hamburger" aria-label="منوی ناوبری" aria-expanded="false" aria-controls="nav-menu" type="button">
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
-                </button>
-            </nav>
-        </header>
-        <div class="scroll-progress" aria-hidden="true"><span></span></div>
-
-        <!-- Hero Section -->
-        <section id="home" class="hero" role="banner" aria-labelledby="hero-title">
-            <div id="tsparticles" aria-hidden="true"></div>
-            <div class="hero-content">
-                <div class="brand-hero">
-                    <img src="icons/Logo.svg" alt="Pro TooLs" class="brand-logo" />
-                    <h1 id="hero-title" class="hero-title brand-text"><span lang="en">Pro TooLs</span></h1>
-                </div>
-                <p class="hero-subtitle">ابزارهای دیجیتال پیشرفته</p>
-                <p class="hero-description">
-                    بیش از 2 سال تجربه در ارائه بهترین تنظیمات، کانفیگ‌ها و پنل‌های دیجیتال
-                </p>
-                <!-- معرفی کوتاه - بدون دکمه -->
-            </div>
-        </section>
-        
-        <!-- Register Section as CTA -->
-        <section id="register" class="section" role="region" aria-labelledby="register-title">
-            <div class="container">
-                <div class="section-header">
-                    <h2 id="register-title" class="section-title">ثبت‌نام و ورود</h2>
-                    <p class="section-subtitle">با آیدی عددی تلگرام وارد شوید؛ اگر حساب دارید وارد شوید و در غیر اینصورت ثبت‌نام کنید.</p>
-                </div>
-
-                <div class="glass-card auth-cta-card" style="max-width: 720px; margin: 0 auto; text-align:center;">
-                    <div class="card-description" style="margin-bottom:1rem;">برای ادامه روی دکمه زیر کلیک کنید.</div>
-                    <button id="openAuthModalBtn" class="btn btn-primary" aria-describedby="regStatus">ثبت‌نام و ورود</button>
-                    <div class="card-description" id="regStatus" style="margin-top:12px;"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Auth Modal (Register/Login + GOLD activation) -->
-        <div id="authModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="authModalTitle" style="display:none;">
-            <div class="modal" style="max-width:720px;">
-                <div class="modal-header">
-                    <h3 id="authModalTitle">ثبت‌نام و ورود <span id="authModeBadge" style="font-size:0.8rem; font-weight:700; color: var(--accent); margin-inline-start: 8px;">(ورود)</span></h3>
-                    <button class="modal-close" id="closeAuthModalBtn" aria-label="بستن">✖</button>
-                </div>
-                <div class="modal-body">
-                    <!-- Auth Tabs -->
-                    <div class="auth-tabs" role="tablist" aria-label="انتخاب حالت" style="display:flex; gap:8px; margin-bottom:8px;">
-                        <button id="authTabLogin" class="btn btn-secondary" type="button" role="tab" aria-selected="true" aria-controls="view-auth">ورود</button>
-                        <button id="authTabRegister" class="btn btn-outline" type="button" role="tab" aria-selected="false" aria-controls="view-auth">ثبت‌نام</button>
-                    </div>
-                    <div id="authModeHint" class="card-description" style="margin-bottom:12px; color: var(--text-secondary);">در حالت ورود هستید. شماره آیدی تلگرام را وارد کنید تا کد برای شما ارسال شود.</div>
-
-                    <div id="view-auth" role="tabpanel" aria-labelledby="authTabLogin">
-                        <div class="card-title">مرحله ۱: آیدی عددی تلگرام</div>
-                        <div class="card-description" id="tgIdCaption">آیدی عددی تلگرام خود را وارد کنید (فقط اعداد بدون @).</div>
-                        <div class="form-row" style="display:flex; gap:12px; align-items:center;">
-                            <input id="tgIdInput" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="مثال: 123456789" class="input" style="flex:1;" />
-                            <button id="startRegisterBtn" class="btn btn-primary">ارسال کد</button>
-                        </div>
-
-                        <div id="registerStep2" style="margin-top:16px; display:none;">
-                            <div class="card-title" id="step2Title">مرحله ۲: دریافت و ورود کد</div>
-                            <div class="card-description" id="step2Caption">ربات را استارت کنید تا کد ۴ رقمی برای شما ارسال شود.</div>
-                            <div class="form-row" style="display:flex; gap:12px; align-items:center; flex-wrap: wrap;">
-                                <a id="botLink" href="https://t.me/protoolsverify_bot" target="_blank" rel="noopener" class="btn btn-outline">رفتن به ربات</a>
-                                <button id="resendCodeBtn" class="btn btn-secondary">ارسال مجدد کد</button>
-                            </div>
-                            <div class="card-description" style="margin-top: 14px;" id="codePrompt">کد ۴ رقمی را وارد کنید:</div>
-                            <div class="form-row" style="display:flex; gap:12px; align-items:center;">
-                                <input id="codeInput" type="text" inputmode="numeric" pattern="\d{4}" maxlength="4" placeholder="مثال: 1234" class="input" style="max-width:200px;" />
-                                <button id="verifyCodeBtn" class="btn btn-primary">تایید</button>
-                            </div>
-                            <div id="verifyStatus" class="card-description" style="margin-top:10px;"></div>
-                            <div class="form-row" style="display:flex; gap:12px; align-items:center; justify-content:flex-end; margin-top:12px;">
-                                <button id="cancelAuthModalBtn" class="btn btn-secondary">انصراف</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <footer class="footer" role="contentinfo">
-            <div class="container">
-                <div class="footer-content">
-                    <div class="footer-brand">
-                        <h3 class="footer-logo">Pro TooLs</h3>
-                        <p class="footer-description">
-                            ابزارهای دیجیتال پیشرفته برای کاربران حرفه‌ای
-                        </p>
-                        <p class="footer-cta">
-                            <a href="/dashboard/admin/" class="btn btn-primary footer-admin-btn">پنل مدیریت</a>
-                        </p>
-                    </div>
-
-                    <div class="footer-links">
-                        <div class="footer-section">
-                            <h4 class="footer-title">دسـتـرسـی سـریع</h4>
-                            <ul class="footer-list quick-access">
-                                <li><a href="index.html">خانه</a></li>
-                                <li><a href="Pages/ios/">آیفون</a></li>
-                                <li><a href="Pages/android/">اندروید</a></li>
-                                <li><a href="Pages/windows/">ویندوز</a></li>
-                                <li class="hide-mobile"><a href="Pages/web-panel/">پنل سایتی</a></li>
-                                <li class="hide-mobile"><a href="Pages/python-panel.html">پنل پایتونی</a></li>
-                                <li class="hide-mobile"><a href="Pages/openvpn.html">OpenVPN</a></li>
-                                <li><a href="Pages/dns.html">DNS</a></li>
-                                <li><a href="Pages/wireguard.html">WireGuard</a></li>
-                            </ul>
-                        </div>
-
-                        <div class="footer-section">
-                            <h4 class="footer-title">پشـتـیبانی</h4>
-                            <ul class="footer-list contact-links">
-                                <li><a href="Pages/help.html">راهنما</a></li>
-                                <li><a href="Pages/faq.html">سوالات متداول</a></li>
-                                <li><a href="https://t.me/Minimalcraft" target="_blank" rel="noopener"><img src="icons/Telegram.svg" alt="Telegram"/>ادمین شماره 1</a></li>
-                                <li><a href="https://t.me/NeoDebug" target="_blank" rel="noopener"><img src="icons/Telegram.svg" alt="Telegram"/>ادمین شماره 2</a></li>
-                            </ul>
-                        </div>
-
-                        <div class="footer-section">
-                            <h4 class="footer-title">اسـپانـسـرها</h4>
-                            <ul class="footer-list social-links">
-                                <li><a href="https://t.me/PersianEdge" target="_blank" rel="noopener"><img src="icons/Telegram.svg" alt="Telegram"/>PersianEdge</a></li>
-                                <li><a href="https://t.me/NoiDUsers" target="_blank" rel="noopener"><img src="icons/Telegram.svg" alt="Telegram"/>NoiDUsers</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="footer-bottom">
-                    <p>&copy; <span id="year"></span> Pro TooLs. تمامی حقوق محفوظ است. | این سایت با کمک هوش مصنوعی در حال توسعه است و ممکن است برخی مطالب به صورت خودکار منتشر شده باشند.</p>
-                </div>
-            </div>
-        </footer>
-    </main>
-
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
-    <script src="script.js"></script>
+    <script>
+        // Optional: Auto-refresh every 30 seconds
+        setTimeout(() => {
+            location.reload();
+        }, 30000);
+    </script>
 </body>
 </html>
