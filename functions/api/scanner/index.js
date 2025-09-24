@@ -34,12 +34,13 @@ export async function onRequestGet({ env }) {
     }
 
     // Compute availability by subtracting current allocations
-    // allocation key format: 'scanner/alloc/<address>' => JSON array of userIds
+    // allocation key format: 'scanner/alloc/<encoded_address>' => JSON array of userIds
     for (const [key, addrs] of Object.entries(serversByCountry)) {
       let available = 0;
       for (const addr of addrs) {
         try {
-          const allocRaw = await env.DATABASE.get(`scanner/alloc/${addr}`);
+          const safeKey = `scanner/alloc/${encodeURIComponent(addr)}`;
+          const allocRaw = await env.DATABASE.get(safeKey);
           let arr = [];
           if (allocRaw) {
             try { arr = JSON.parse(allocRaw) || []; } catch {}

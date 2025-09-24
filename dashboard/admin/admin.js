@@ -1222,27 +1222,64 @@
           <div class="country-stats">
             <div class="country-stat">
               <span class="number">${country.total || 0}</span>
-              <span class="label">کل</span>
+              <span class="label">کل سرورها</span>
             </div>
             <div class="country-stat available">
               <span class="number">${country.available || 0}</span>
               <span class="label">آزاد</span>
             </div>
             <div class="country-stat allocated">
-              <span class="number">${(country.total || 0) - (country.available || 0)}</span>
+              <span class="number">${country.allocated || 0}</span>
               <span class="label">تخصیص‌یافته</span>
             </div>
           </div>
-          <div class="country-actions">
-            <button class="btn btn-xs btn-secondary" onclick="scannerManager.editCountry('${country.code}')">ویرایش</button>
-            <button class="btn btn-xs btn-danger" onclick="scannerManager.deleteCountry('${country.code}')">حذف</button>
-          </div>
-        `;
+        </div>
+        <div class="country-actions">
+          <button class="btn btn-xs btn-secondary" onclick="scannerManager.editCountry('${country.code}')">ویرایش</button>
+          <button class="btn btn-xs btn-danger" onclick="scannerManager.deleteCountry('${country.code}')">حذف</button>
+        </div>
+      `;
         fragment.appendChild(card);
       });
 
       container.innerHTML = '';
       container.appendChild(fragment);
+    },
+
+    // Calculate live statistics from allocation keys
+    async calculateLiveStats(countries) {
+      const countriesWithStats = [];
+      
+      for (const country of countries) {
+        const servers = Array.isArray(country.servers) ? country.servers : [];
+        let availableCount = 0;
+        
+        // Check each server's allocation status
+        for (const serverAddr of servers) {
+          try {
+            const safeKey = `scanner/alloc/${encodeURIComponent(serverAddr)}`;
+            const allocData = await api.get(safeKey);
+            const allocations = JSON.parse(allocData || '[]');
+            
+            // Server is available if it has less than 2 allocations
+            if (Array.isArray(allocations) && allocations.length < 2) {
+              availableCount++;
+            }
+          } catch (e) {
+            // If no allocation data exists, server is available
+            availableCount++;
+          }
+        }
+        
+        countriesWithStats.push({
+          ...country,
+          total: servers.length,
+          available: availableCount,
+          allocated: servers.length - availableCount
+        });
+      }
+      
+      return countriesWithStats;
     },
 
     updateStats(countries) {
@@ -1265,8 +1302,9 @@
     async refreshData() {
       try {
         const data = await this.loadCountries();
-        this.renderCountries(data.countries || []);
-        this.updateStats(data.countries || []);
+        const countriesWithLiveStats = await this.calculateLiveStats(data.countries || []);
+        this.renderCountries(countriesWithLiveStats);
+        this.updateStats(countriesWithLiveStats);
       } catch (e) {
         console.error('Error refreshing scanner data:', e);
         alert('خطا در بارگذاری داده‌ها');
@@ -1339,13 +1377,10 @@
           .map(s => s.trim())
           .filter(s => s.length > 0);
 
-        // Auto-calc totals from servers list and set all available
-        const totalCount = servers.length;
+        // Only store basic country info and servers list - stats will be calculated live
         const countryData = {
           code: formData.code.toUpperCase(),
           name: formData.name,
-          total: totalCount,
-          available: totalCount,
           servers: servers
         };
 

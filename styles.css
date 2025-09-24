@@ -211,16 +211,16 @@
 
 /* Global anti-overflow guards (apply on all screens) */
 html, body {
-  width: 100% !important;
-  overflow-x: hidden !important;
+  width: 100%;
+  overflow-x: hidden;
 }
 .header, .navbar, .main-content, .scroll-progress, .hero, .container, footer {
-  max-width: 100% !important;
-  overflow-x: clip !important;
+  max-width: 100%;
+  overflow-x: clip;
 }
 /* Ensure media never exceed viewport */
 img, svg, video, canvas {
-  max-width: 100% !important;
+  max-width: 100%;
   height: auto;
 }
 
@@ -1247,12 +1247,12 @@ img {
   .auth-cta-card .card-description { font-size: 0.95rem; }
 }
 
-/* Ensure mobile drawer overrides later rules */
+/* Consolidated mobile navigation rules */
 @media (max-width: 768px) {
   .hamburger { 
-    display: flex !important;
-    position: relative !important;
-    z-index: 7000 !important;
+    display: flex;
+    position: relative;
+    z-index: 7000;
   }
   
   /* Force mobile menu styles with highest specificity */

@@ -66,7 +66,8 @@ export async function onRequestPost({ request, env }) {
   // Helper: load allocation list for an address
   async function loadAlloc(addr) {
     try {
-      const r = await env.DATABASE.get(`scanner/alloc/${addr}`);
+      const safeKey = `scanner/alloc/${encodeURIComponent(addr)}`;
+      const r = await env.DATABASE.get(safeKey);
       const arr = r ? JSON.parse(r) : [];
       return Array.isArray(arr) ? arr : [];
     } catch { return []; }
@@ -74,7 +75,18 @@ export async function onRequestPost({ request, env }) {
 
   // Helper: save allocation
   async function saveAlloc(addr, arr) {
-    await env.DATABASE.put(`scanner/alloc/${addr}`, JSON.stringify(arr));
+    const safeKey = `scanner/alloc/${encodeURIComponent(addr)}`;
+    await env.DATABASE.put(safeKey, JSON.stringify(arr));
+  }
+
+  // Helper: shuffle array for fair distribution
+  function shuffle(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
   }
 
   // 1) If user already has an allocation in the requested country, return it
@@ -89,8 +101,9 @@ export async function onRequestPost({ request, env }) {
     }
   }
 
-  // 2) Try to allocate a new address with < 2 users
-  for (const it of pool) {
+  // 2) Try to allocate a new address with < 2 users (shuffled for fair distribution)
+  const shuffledPool = shuffle(pool);
+  for (const it of shuffledPool) {
     const alloc = await loadAlloc(it.address);
     if (alloc.length < 2) {
       alloc.push(userId);
@@ -101,4 +114,3 @@ export async function onRequestPost({ request, env }) {
 
   return json({ error: 'NO_AVAILABLE_SERVER' }, 404);
 }
-

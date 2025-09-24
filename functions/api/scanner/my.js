@@ -47,7 +47,8 @@ export async function onRequestGet({ request, env }) {
 
   async function loadAlloc(addr) {
     try {
-      const r = await env.DATABASE.get(`scanner/alloc/${addr}`);
+      const safeKey = `scanner/alloc/${encodeURIComponent(addr)}`;
+      const r = await env.DATABASE.get(safeKey);
       const arr = r ? JSON.parse(r) : [];
       return Array.isArray(arr) ? arr : [];
     } catch { return []; }

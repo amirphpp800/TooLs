@@ -589,7 +589,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function isValidTgId(val) {
-        return /^[0-9]{5,15}$/.test(String(val || '').trim());
+        const sanitized = String(val || '').trim().replace(/[^\d]/g, '');
+        return /^[0-9]{5,15}$/.test(sanitized) && sanitized.length >= 5 && sanitized.length <= 15;
     }
 
     async function apiPost(path, payload) {
@@ -1474,18 +1475,22 @@ document.addEventListener('DOMContentLoaded', function() {
     let isKeyboardUser = false;
     
     document.addEventListener('keydown', function(e) {
-        // Escape key to close mobile menu and modals
-        if (e.key === 'Escape') {
-            if (navMenu && navMenu.classList.contains('active')) {
-                hamburger.classList.remove('active');
-                navMenu.classList.remove('active');
+        try {
+            // Escape key to close mobile menu and modals
+            if (e.key === 'Escape') {
+                if (navMenu && navMenu.classList.contains('active')) {
+                    hamburger?.classList.remove('active');
+                    navMenu.classList.remove('active');
+                }
+                
+                // Close auth modal
+                const authModal = document.getElementById('authModal');
+                if (authModal && authModal.style.display === 'flex') {
+                    authModal.style.display = 'none';
+                }
             }
-            
-            // Close auth modal
-            const authModal = document.getElementById('authModal');
-            if (authModal && authModal.style.display === 'flex') {
-                authModal.style.display = 'none';
-            }
+        } catch (error) {
+            console.error('Keyboard event handler error:', error);
         }
 
         // Tab navigation enhancement
