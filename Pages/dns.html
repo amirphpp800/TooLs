@@ -714,19 +714,42 @@
         loadScanner();
 
         async function loadScanner() {
+          // 1) Try dedicated scanner API
           try {
-            const res = await fetch('/api/scanner');
+            const res = await fetch('/api/scanner', { cache: 'no-cache' });
             if (res.ok) {
               const data = await res.json();
-              renderCountries(data?.countries || [], data?.serversByCountry || {});
-            } else {
-              // API not available, show default countries
-              renderCountries([], {});
+              if (data && (Array.isArray(data.countries) || data.serversByCountry)) {
+                renderCountries(data?.countries || [], data?.serversByCountry || {});
+                return;
+              }
             }
-          } catch (e) {
-            // API not available, show default countries
-            renderCountries([], {});
-          }
+          } catch {}
+
+          // 2) Fallback: read from KV key scanner/countries.json written by admin panel
+          try {
+            const url = new URL('/api/kv/get', location.origin);
+            url.searchParams.set('key', 'scanner/countries.json');
+            const resKV = await fetch(url.toString(), { cache: 'no-cache' });
+            if (resKV.ok) {
+              const text = await resKV.text();
+              try {
+                const kvData = JSON.parse(text || '{}');
+                const countries = Array.isArray(kvData?.countries) ? kvData.countries : [];
+                // Build serversByCountry from plain IPs with all available by default
+                const serversByCountry = {};
+                countries.forEach(c => {
+                  const ips = Array.isArray(c?.servers) ? c.servers : [];
+                  serversByCountry[c.code] = ips.map(ip => ({ ip, allocated: false }));
+                });
+                renderCountries(countries, serversByCountry);
+                return;
+              } catch {}
+            }
+          } catch {}
+
+          // 3) As last resort, render defaults
+          renderCountries([], {});
         }
 
         function flagEmoji(cc) {
