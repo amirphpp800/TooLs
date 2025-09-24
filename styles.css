@@ -1,35 +1,93 @@
 /* Mobile drawer navigation */
 @media (max-width: 768px) {
   .hamburger { 
-    display: flex; 
+    display: flex !important;
+    position: relative !important;
+    z-index: 7000 !important;
   }
+
+/* Hide fallback menu button by default (shown only on mobile via media query) */
+.hamburger-fallback { display: none; }
+
+/* Fallback mobile nav modal */
+.nav-fallback-backdrop {
+  position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.8); z-index: 10000;
+}
+.nav-fallback-backdrop.active { display: flex; }
+.nav-fallback-modal {
+  width: min(92vw, 520px); max-height: 85vh; overflow: auto;
+  background: rgba(0,0,0,0.95); border: 1px solid var(--border); border-radius: 16px;
+  box-shadow: var(--shadow-xl);
+}
+.nav-fallback-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.nav-fallback-title { font-weight: 800; color: var(--text); }
+.nav-fallback-close { background: transparent; border: none; color: var(--text); font-size: 22px; cursor: pointer; }
+.nav-fallback-body { padding: 10px 12px; }
+.nav-fallback-body .nav-menu { 
+  all: unset; 
+  display: grid !important; 
+  gap: 6px !important; 
+  list-style: none !important; 
+  width: 100% !important;
+  position: static !important; 
+  top: auto !important; right: auto !important; bottom: auto !important; left: auto !important;
+  max-width: none !important; height: auto !important; transform: none !important;
+  padding: 0 !important; margin: 0 !important; background: transparent !important; border: none !important; box-shadow: none !important;
+  pointer-events: auto !important;
+}
+.nav-fallback-body .nav-menu > li { display: block !important; width: 100% !important; }
+.nav-fallback-body .nav-link { width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.nav-fallback-body .dropdown-menu { 
+  all: unset; 
+  display: grid !important; 
+  gap: 6px !important; 
+  margin-top: 8px !important; 
+  position: static !important; 
+  opacity: 1 !important; 
+  visibility: visible !important; 
+  transform: none !important;
+}
+/* Make sure text is visible in dark theme */
+.nav-fallback-body .nav-link,
+.nav-fallback-body .dropdown-item {
+  color: var(--text) !important;
+  text-decoration: none !important;
+}
+.nav-fallback-body .nav-link span,
+.nav-fallback-body .dropdown-item span { color: var(--text) !important; }
+/* Fallback modal header note and actions */
+.nav-fallback-note { padding: 8px 16px; color: var(--error); border-bottom: 1px solid var(--border); font-size: 0.9rem; font-weight: 700; }
+.nav-fallback-actions { display: flex; gap: 8px; padding: 12px; justify-content: center; border-bottom: 1px solid var(--border); }
 
   /* Mobile drawer for nav menu */
   .nav-menu {
-    position: fixed;
-    top: 64px;
-    right: 0; /* RTL: slide from right */
-    bottom: 0;
-    width: 85%;
-    max-width: 360px;
-    background: var(--bg-secondary);
-    border-left: 1px solid var(--border);
-    box-shadow: var(--shadow-lg);
-    padding: 0 16px; /* No top padding */
-    margin: 0; /* No margin */
-    flex-direction: column;
-    gap: 2px; /* Minimal gap */
-    transform: translateX(100%);
-    transition: transform var(--duration-normal) ease;
-    z-index: 6000; /* Higher than overlay */
-    overflow-y: auto;
-    height: calc(100vh - 64px); /* Ensure full height minus header */
-    display: flex; /* Always flex for proper layout */
-    pointer-events: none; /* Disable clicks when closed */
+    position: fixed !important;
+    top: var(--header-h, 64px) !important;
+    right: 0 !important; /* RTL: slide from right */
+    bottom: 0 !important;
+    width: 85% !important;
+    max-width: 360px !important;
+    background: var(--bg-secondary) !important;
+    border-left: 1px solid var(--border) !important;
+    box-shadow: var(--shadow-lg) !important;
+    padding: 16px !important;
+    margin: 0 !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    transform: translateX(100%) !important;
+    transition: transform var(--duration-normal) ease !important;
+    z-index: 6000 !important;
+    overflow-y: auto !important;
+    height: calc(100vh - 64px) !important;
+    display: flex !important;
+    pointer-events: none !important; /* Disable clicks when closed */
   }
   .nav-menu.active { 
-    transform: translateX(0); 
-    pointer-events: auto; /* Enable clicks when open */
+    transform: translateX(0) !important; 
+    pointer-events: auto !important; /* Enable clicks when open */
+    visibility: visible !important;
+    opacity: 1 !important;
   }
   
   /* Force all children to be clickable when menu is active */
@@ -61,6 +119,36 @@
     padding-top: 4px; /* Minimal top padding for first item */
     margin-top: 0;
   }
+
+  /* Mobile-wide overflow guard */
+  html, body, .header, .navbar, .main-content, .scroll-progress, .hero {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Ensure hamburger is always visible and clickable on mobile */
+  .navbar {
+    position: relative;
+  }
+  
+  .hamburger {
+    display: flex !important;
+    position: relative !important;
+    z-index: 7000 !important;
+    order: 3 !important;
+    margin-left: auto !important;
+  }
+  .hamburger-fallback {
+    display: inline-flex;
+    width: 44px; height: 44px;
+    align-items: center; justify-content: center;
+    gap: 4px; margin: 0 4px 0 0; padding: 8px;
+    background: transparent; border: 1px solid var(--border);
+    border-radius: var(--radius-md); cursor: pointer; z-index: 7000;
+    order: 3;              /* place at the end like original hamburger */
+    margin-left: auto;     /* push to the far right in LTR navbar */
+  }
+  .hamburger-fallback span { width: 22px; height: 2px; background: #fff; display: block; }
 
   /* Mobile dropdown menus */
   .nav-menu .dropdown-menu {
@@ -180,6 +268,43 @@
   object-fit: contain;
 }
 .panel-card .panel-body { padding: 16px; }
+
+/* DNS Articles grid and cover sizing */
+.articles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.article-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.article-card .article-cover {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.article-card .article-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.article-card .article-title {
+  font-weight: 700;
+  color: var(--text);
+}
+.article-card .article-summary {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+@media (max-width: 480px) {
+  .article-card .article-cover { aspect-ratio: 4 / 3; }
+}
 
 /* Auth tabs visual states */
 .auth-tabs {
@@ -315,10 +440,14 @@
     --duration-fast: 150ms;
     --duration-normal: 250ms;
     --duration-slow: 400ms;
+    /* Dynamic header height for mobile drawer alignment */
+    --header-h: 64px;
 }
 
 html {
     scroll-behavior: smooth;
+    overflow-x: hidden; /* Prevent horizontal scroll on all devices */
+    overscroll-behavior-x: none; /* Avoid sideways elasticity */
 }
 
 body {
@@ -327,7 +456,7 @@ body {
     background: var(--bg);
     color: var(--text);
     line-height: 1.65;
-    overflow-x: hidden;
+    overflow-x: hidden; /* Safety guard */
     direction: rtl;
     text-align: right;
     font-feature-settings: 'kern' 1, 'liga' 1;
@@ -701,6 +830,7 @@ img {
     justify-content: flex-start; /* in RTL, start = right; keep items flush right */
     margin: 0; /* remove default UL margin */
     padding: 0; /* remove default UL padding */
+    max-width: 100%;
 }
 
 .nav-menu > li {
@@ -839,24 +969,24 @@ img {
 .hamburger {
     display: none;
     position: relative;
-    width: 48px; /* Larger touch area */
-    height: 48px; /* Larger touch area */
+    width: 48px;
+    height: 48px;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    order: 3; /* Move to end after nav */
-    z-index: 7000; /* Higher than menu */
-    margin: 12px 0; /* More vertical margin to move down */
-    padding: 0;
+    order: 3;
+    z-index: 7000;
+    margin: 0;
+    padding: 8px;
     background: transparent;
     border: none;
     outline: none;
-    /* Ensure entire button is clickable */
     pointer-events: auto;
     user-select: none;
     border-radius: var(--radius-md);
-    transition: background-color var(--duration-fast) ease;
+    transition: all var(--duration-fast) ease;
+    touch-action: manipulation;
 }
 
 .hamburger:hover {
@@ -876,17 +1006,32 @@ img {
     height: 2px;
     background: #ffffff;
     border-radius: 2px;
-    transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none; /* Prevent spans from blocking clicks */
+    transform-origin: center;
 }
 
-.hamburger span:nth-child(1) { transform: translateY(-7px); }
-.hamburger span:nth-child(2) { transform: translateY(0); }
-.hamburger span:nth-child(3) { transform: translateY(7px); }
+.hamburger span:nth-child(1) { 
+    transform: translateY(-7px); 
+}
+.hamburger span:nth-child(2) { 
+    transform: translateY(0); 
+}
+.hamburger span:nth-child(3) { 
+    transform: translateY(7px); 
+}
 
-.hamburger.active span:nth-child(1) { transform: rotate(-45deg); }
-.hamburger.active span:nth-child(2) { opacity: 0; }
-.hamburger.active span:nth-child(3) { transform: rotate(45deg); }
+/* Active state - X animation */
+.hamburger.active span:nth-child(1) { 
+    transform: translateY(0) rotate(45deg); 
+}
+.hamburger.active span:nth-child(2) { 
+    opacity: 0;
+    transform: translateX(-10px);
+}
+.hamburger.active span:nth-child(3) { 
+    transform: translateY(0) rotate(-45deg); 
+}
 
 /* Dropdown Menu */
 .dropdown {
@@ -1012,7 +1157,7 @@ img {
     text-align: center;
     background: transparent;
     padding: 0 var(--space-xl);
-    overflow: hidden;
+    overflow: hidden; /* contain bg effects */
 }
 
 .hero-content {
@@ -1051,12 +1196,34 @@ img {
   .brand-logo { height: clamp(52px, 12vw, 92px); }
 }
 
+/* Auth CTA card responsive improvements */
+.auth-cta-card {
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+  align-items: center;
+  justify-items: center;
+}
+.auth-cta-card .btn {
+  min-width: min(320px, 100%);
+  min-height: 44px;
+  font-weight: 700;
+}
+@media (max-width: 768px) {
+  .auth-cta-card {
+    padding: 16px;
+    margin: 0 12px;
+    border-radius: var(--radius-lg);
+  }
+  .auth-cta-card .card-description { font-size: 0.95rem; }
+}
+
 /* Ensure mobile drawer overrides later rules */
 @media (max-width: 768px) {
   .hamburger { 
-    display: flex !important; 
+    display: flex !important;
     position: relative !important;
-    z-index: 7000 !important; /* Higher than menu */
+    z-index: 7000 !important;
   }
   
   /* Force mobile menu styles with highest specificity */
@@ -1066,7 +1233,7 @@ img {
   nav[role="navigation"] ul.nav-menu,
   .nav-menu {
     position: fixed !important;
-    top: 64px !important;
+    top: var(--header-h, 64px) !important;
     right: 0 !important;
     bottom: 0 !important;
     width: 85% !important;
@@ -1083,11 +1250,14 @@ img {
     transition: transform var(--duration-normal) ease !important;
     z-index: 6000 !important; /* Higher than overlay */
     overflow-y: auto !important;
+    overflow-x: hidden !important; /* Avoid creating horizontal scroll */
     visibility: visible !important;
     opacity: 1 !important;
     display: flex !important; /* ensure menu is renderable for drawer; hidden via transform */
     height: calc(100vh - 64px) !important; /* Ensure full height minus header */
     pointer-events: none !important; /* Disable clicks when closed */
+    contain: layout paint style !important; /* Contain effects to avoid overflow */
+    will-change: transform; /* Hint for smooth drawer */
   }
   /* Active state for all navigation structures */
   .nav-menu.active,

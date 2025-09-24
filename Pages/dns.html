@@ -97,17 +97,33 @@
 
     <main class="section">
       <div class="container">
-        <div class="section-header">
-          <h2 class="section-title">دی ان اس (DNS)</h2>
+        <div class="section-header" style="margin-bottom: 20px;">
+          <h2 class="section-title" style="margin-bottom: 12px;">دی ان اس (DNS)</h2>
           <div class="platform-badge" aria-hidden="true">
-            <img src="../icons/dns.png" alt="WireGuard" />
+            <img src="../icons/dns.png" alt="DNS" />
           </div>
           <p class="section-subtitle">DNS guides, servers and tips</p>
         </div>
 
-        <div class="articles-grid">
-          <div id="dnsArticles"></div>
-        </div>
+        <!-- Server Scanner Section - Moved to top -->
+        <section class="section" style="margin-bottom: 16px;">
+          <div class="section-header" style="margin-bottom: 16px;">
+            <h3 class="section-title" style="margin-bottom: 8px;">اسکنر سرور (DNS)</h3>
+            <p class="section-subtitle">لیست کشورها و موجودی سرورها. دریافت هر آدرس برای حداکثر دو کاربر مجاز است.</p>
+          </div>
+          <div id="scannerCountries" class="app-grid"></div>
+        </section>
+
+        <!-- Articles Section - Moved below scanner -->
+        <section class="section" style="padding-top: 8px;">
+          <div class="section-header" style="margin-bottom: 16px;">
+            <h3 class="section-title" style="margin-bottom: 8px;">مقالات و راهنماها</h3>
+            <p class="section-subtitle">آموزش‌های کامل تنظیم و استفاده از DNS</p>
+          </div>
+          <div class="articles-grid">
+            <div id="dnsArticles"></div>
+          </div>
+        </section>
       </div>
     </main>
 
@@ -446,7 +462,7 @@
       closeEl.addEventListener('click', closeModal);
       modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-      // Add CSS animations for toast
+      // Add CSS animations for toast and country cards
       const style = document.createElement('style');
       style.textContent = `
         @keyframes slideInRight {
@@ -457,8 +473,414 @@
           from { transform: translateX(0); opacity: 1; }
           to { transform: translateX(100%); opacity: 0; }
         }
+        
+        /* Enhanced Country Card Styles */
+        .country-card {
+          background: rgba(255, 255, 255, 0.05) !important;
+          backdrop-filter: blur(20px) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 16px !important;
+          padding: 20px !important;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .country-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        }
+        
+        .country-card:hover {
+          transform: translateY(-4px) !important;
+          background: rgba(255, 255, 255, 0.08) !important;
+          border-color: rgba(255, 255, 255, 0.2) !important;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        .country-card-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 16px;
+          gap: 16px;
+        }
+        
+        .country-info-section {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex: 1;
+        }
+        
+        .country-flag-container {
+          width: 48px;
+          height: 36px;
+          border-radius: 8px;
+          overflow: hidden;
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .country-flag-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        
+        .country-flag-emoji {
+          font-size: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .country-details {
+          flex: 1;
+        }
+        
+        .country-name {
+          font-size: 18px;
+          font-weight: 700;
+          color: var(--text);
+          margin: 0 0 4px 0;
+          line-height: 1.2;
+        }
+        
+        .country-code {
+          font-size: 12px;
+          color: var(--text-secondary);
+          font-weight: 500;
+          background: rgba(255, 255, 255, 0.1);
+          padding: 2px 8px;
+          border-radius: 12px;
+          backdrop-filter: blur(10px);
+        }
+        
+        .country-stats-section {
+          flex-shrink: 0;
+        }
+        
+        .stat-glass-container {
+          display: flex;
+          gap: 8px;
+        }
+        
+        .stat-glass-item {
+          background: rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(15px);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 12px;
+          padding: 8px 12px;
+          text-align: center;
+          min-width: 60px;
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .stat-glass-item::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+          transition: left 0.5s ease;
+        }
+        
+        .stat-glass-item:hover::before {
+          left: 100%;
+        }
+        
+        .stat-glass-item:hover {
+          background: rgba(255, 255, 255, 0.12);
+          border-color: rgba(255, 255, 255, 0.2);
+          transform: translateY(-2px);
+        }
+        
+        .stat-number {
+          font-size: 20px;
+          font-weight: 700;
+          line-height: 1;
+          margin-bottom: 2px;
+        }
+        
+        .stat-label {
+          font-size: 10px;
+          font-weight: 500;
+          opacity: 0.8;
+          line-height: 1;
+        }
+        
+        .total-stat .stat-number { color: var(--text); }
+        .available-stat .stat-number { color: #4CAF50; }
+        .allocated-stat .stat-number { color: #FF9800; }
+        
+        .country-card-footer {
+          margin-top: 16px;
+        }
+        
+        .server-status-bar {
+          width: 100%;
+          height: 4px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 2px;
+          overflow: hidden;
+          margin-bottom: 12px;
+        }
+        
+        .status-bar-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #4CAF50, #8BC34A);
+          border-radius: 2px;
+          transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+        }
+        
+        .country-action-btn {
+          width: 100%;
+          display: flex !important;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 12px 16px !important;
+          border-radius: 12px !important;
+          font-weight: 600;
+          background: rgba(76, 175, 80, 0.2) !important;
+          border: 1px solid rgba(76, 175, 80, 0.3) !important;
+          backdrop-filter: blur(10px);
+          transition: all 0.3s ease !important;
+        }
+        
+        .country-action-btn:hover:not(:disabled) {
+          background: rgba(76, 175, 80, 0.3) !important;
+          border-color: rgba(76, 175, 80, 0.5) !important;
+          transform: translateY(-2px) !important;
+          box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3) !important;
+        }
+        
+        .country-action-btn:disabled {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border-color: rgba(255, 255, 255, 0.1) !important;
+          color: var(--text-secondary) !important;
+          cursor: not-allowed;
+        }
+        
+        .btn-icon {
+          font-size: 16px;
+        }
+        
+        .btn-text {
+          font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+          .country-card-header {
+            flex-direction: column;
+            gap: 12px;
+          }
+          
+          .country-stats-section {
+            width: 100%;
+          }
+          
+          .stat-glass-container {
+            justify-content: space-between;
+          }
+          
+          .stat-glass-item {
+            flex: 1;
+            min-width: auto;
+          }
+        }
       `;
       document.head.appendChild(style);
+
+      // 3) Server Scanner UI
+      const countriesWrap = document.getElementById('scannerCountries');
+      if (countriesWrap) {
+        loadScanner();
+
+        async function loadScanner() {
+          try {
+            const res = await fetch('/api/scanner');
+            if (res.ok) {
+              const data = await res.json();
+              renderCountries(data?.countries || [], data?.serversByCountry || {});
+            } else {
+              // API not available, show default countries
+              renderCountries([], {});
+            }
+          } catch (e) {
+            // API not available, show default countries
+            renderCountries([], {});
+          }
+        }
+
+        function flagEmoji(cc) {
+          if (!cc || cc.length !== 2) return '🌐';
+          const codePoints = [...cc.toUpperCase()].map(c => 0x1F1E6 - 'A'.charCodeAt(0) + c.charCodeAt(0));
+          return String.fromCodePoint(...codePoints);
+        }
+
+        // Enhanced flag loading with multiple fallbacks
+        function loadCountryFlag(element, countryCode) {
+          const flagSources = [
+            `https://flagcdn.com/w80/${countryCode.toLowerCase()}.png`,
+            `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png`,
+            `https://flagpedia.net/data/flags/w580/${countryCode.toLowerCase()}.png`,
+            `https://flagpedia.net/data/flags/mini/${countryCode.toLowerCase()}.png`
+          ];
+          
+          let currentIndex = 0;
+          
+          function tryNextSource() {
+            if (currentIndex >= flagSources.length) {
+              // All sources failed, show emoji fallback
+              element.innerHTML = `<div style="font-size:28px;">${flagEmoji(countryCode)}</div>`;
+              return;
+            }
+            
+            const img = document.createElement('img');
+            img.src = flagSources[currentIndex];
+            img.alt = `${countryCode} flag`;
+            img.style.cssText = 'width: 40px; height: 30px; border-radius: 4px; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.2);';
+            
+            img.onload = () => {
+              element.innerHTML = '';
+              element.appendChild(img);
+            };
+            
+            img.onerror = () => {
+              currentIndex++;
+              tryNextSource();
+            };
+          }
+          
+          tryNextSource();
+        }
+
+        function renderCountries(list, byCountry) {
+          const frag = document.createDocumentFragment();
+          
+          // If no data from API, show default countries
+          if (!list || list.length === 0) {
+            list = [
+              { code: 'GB', name: 'انگلستان' },
+              { code: 'DE', name: 'آلمان' }
+            ];
+          }
+          
+          list.forEach(item => {
+            // Calculate stats dynamically from serversByCountry if provided
+            const servers = (byCountry && item?.code && Array.isArray(byCountry[item.code])) ? byCountry[item.code] : [];
+            const total = servers.length || (item.total || 0);
+            const available = servers.length
+              ? servers.filter(s => {
+                  const st = (s?.status || '').toString().toLowerCase();
+                  const allocated = Boolean(s?.allocated) || st === 'allocated' || st === 'busy' || st === 'used';
+                  return !allocated;
+                }).length
+              : (item.available || 0);
+            const allocatedCount = Math.max(0, total - available);
+            const card = document.createElement('div');
+            card.className = 'glass-card country-card';
+            card.innerHTML = `
+              <div class="country-card-header">
+                <div class="country-info-section">
+                  <div class="country-flag-container">
+                    <img src="https://flagcdn.com/w80/${item.code.toLowerCase()}.png" 
+                         alt="${item.name} flag" 
+                         class="country-flag-img"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+                    <div class="country-flag-emoji" style="display:none;">${flagEmoji(item.code)}</div>
+                  </div>
+                  <div class="country-details">
+                    <h4 class="country-name">${item.name || item.code || 'کشور'}</h4>
+                    <span class="country-code">${item.code}</span>
+                  </div>
+                </div>
+                
+                <div class="country-stats-section">
+                  <div class="stat-glass-container">
+                    <div class="stat-glass-item total-stat">
+                      <div class="stat-number">${total}</div>
+                      <div class="stat-label">کل سرور</div>
+                    </div>
+                    <div class="stat-glass-item available-stat">
+                      <div class="stat-number">${available}</div>
+                      <div class="stat-label">آزاد</div>
+                    </div>
+                    <div class="stat-glass-item allocated-stat">
+                      <div class="stat-number">${allocatedCount}</div>
+                      <div class="stat-label">اشغال</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="country-card-footer">
+                <div class="server-status-bar">
+                  <div class="status-bar-fill" style="width: ${total > 0 ? (available / total * 100) : 0}%"></div>
+                </div>
+                <button class="btn btn-primary scan-allocate-btn country-action-btn" data-country="${item.code || item.name}" 
+                        ${available === 0 ? 'disabled' : ''}>
+                  <span class="btn-icon">🌐</span>
+                  <span class="btn-text">${available === 0 ? 'سرور موجود نیست' : 'دریافت سرور'}</span>
+                </button>
+              </div>
+            `;
+            frag.appendChild(card);
+          });
+          countriesWrap.replaceChildren(frag);
+
+          // bind allocate buttons
+          countriesWrap.querySelectorAll('.scan-allocate-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const country = btn.getAttribute('data-country') || '';
+              btn.disabled = true;
+              try {
+                // Check auth status
+                const s = await fetch('/api/auth/status', { credentials: 'include' }).then(r=>r.json()).catch(()=>({authenticated:false}));
+                if (!s?.authenticated) {
+                  // redirect to login/register
+                  window.location.href = '/index.html#register?mode=login';
+                  return;
+                }
+                const res = await fetch('/api/scanner/allocate', {
+                  method: 'POST',
+                  headers: { 'content-type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({ country })
+                });
+                const data = await res.json().catch(()=>({}));
+                if (res.ok && data?.address) {
+                  showToast(`سرور شما: ${data.address}`);
+                  try { await navigator.clipboard.writeText(data.address); } catch {}
+                } else {
+                  showToast(data?.error === 'NO_AVAILABLE_SERVER' ? 'سرور آزاد موجود نیست' : 'خطا در دریافت سرور');
+                }
+              } finally {
+                btn.disabled = false;
+                // refresh counts
+                loadScanner();
+              }
+            });
+          });
+        }
+      }
     })();
   </script>
 </body>

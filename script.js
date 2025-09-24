@@ -20,35 +20,91 @@ document.addEventListener('DOMContentLoaded', function() {
     // Mobile Navigation (Hamburger) + Dropdown Menu Functionality
     const hamburger = document.querySelector('.hamburger');
     const navMenu = document.querySelector('.nav-menu');
+    
+    // Ensure mobile drawer aligns exactly under the header
+    function updateHeaderHeightVar() {
+        try {
+            const headerEl = document.querySelector('.header');
+            const h = headerEl ? headerEl.offsetHeight : 64;
+            document.documentElement.style.setProperty('--header-h', h + 'px');
+        } catch {}
+    }
+    // Initialize on load
+    updateHeaderHeightVar();
+    
     if (hamburger && navMenu) {
+        console.log('Hamburger menu elements found');
+        
         function setHamburgerState(open) {
+            console.log('Setting hamburger state to:', open);
+            console.log('Hamburger element:', hamburger);
+            console.log('NavMenu element:', navMenu);
+            
+            // Toggle classes
+            if (open) updateHeaderHeightVar();
             hamburger.classList.toggle('active', open);
             navMenu.classList.toggle('active', open);
+            
+            console.log('Hamburger classes after toggle:', hamburger.className);
+            console.log('NavMenu classes after toggle:', navMenu.className);
+            
+            // Update ARIA attributes
             hamburger.setAttribute('aria-expanded', open ? 'true' : 'false');
-
-            // Remove any existing overlay
-            const existingOverlay = document.getElementById('mobileOverlay');
-            if (existingOverlay) {
-                existingOverlay.remove();
-            }
-
-            // No overlay needed - menu works without it
+            
+            // Handle body scroll
             if (open) {
                 document.body.style.overflow = 'hidden';
+                // Add backdrop
+                if (!document.getElementById('mobile-backdrop')) {
+                    const backdrop = document.createElement('div');
+                    backdrop.id = 'mobile-backdrop';
+                    backdrop.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0, 0, 0, 0.5);
+                        z-index: 5999;
+                        opacity: 0;
+                        transition: opacity 0.3s ease;
+                    `;
+                    document.body.appendChild(backdrop);
+                    
+                    // Fade in backdrop
+                    setTimeout(() => {
+                        backdrop.style.opacity = '1';
+                    }, 10);
+                    
+                    // Close menu when clicking backdrop
+                    backdrop.addEventListener('click', () => {
+                        setHamburgerState(false);
+                    });
+                }
             } else {
                 document.body.style.overflow = '';
+                // Remove backdrop
+                const backdrop = document.getElementById('mobile-backdrop');
+                if (backdrop) {
+                    backdrop.style.opacity = '0';
+                    setTimeout(() => {
+                        backdrop.remove();
+                    }, 300);
+                }
             }
         }
 
+        // Hamburger click handler
         hamburger.addEventListener('click', function(e) {
+            e.preventDefault();
             e.stopPropagation();
-            console.log('Hamburger clicked!');
-            const open = !hamburger.classList.contains('active');
-            console.log('Setting hamburger state to:', open);
-            setHamburgerState(open);
+            console.log('Hamburger button clicked');
+            
+            const isOpen = hamburger.classList.contains('active');
+            setHamburgerState(!isOpen);
         });
 
-        // Close menu when clicking outside
+        // Close menu when clicking outside (fallback)
         document.addEventListener('click', function(e) {
             if (window.innerWidth <= 768 && navMenu.classList.contains('active')) {
                 // Check if click is outside menu and hamburger
@@ -58,6 +114,272 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+
+        // Close menu on window resize if it becomes desktop size
+        window.addEventListener('resize', function() {
+            updateHeaderHeightVar();
+            if (window.innerWidth > 768 && navMenu.classList.contains('active')) {
+                setHamburgerState(false);
+            }
+        });
+
+        // Close on link click (mobile) - but NOT when clicking dropdown toggles
+        navMenu.addEventListener('click', (ev) => {
+            const a = ev.target.closest('a');
+            if (!a) return;
+            
+            console.log('Nav link clicked:', a.textContent.trim());
+            const isToggle = a.classList.contains('dropdown-toggle');
+            const href = a.getAttribute('href');
+            console.log('Is toggle:', isToggle, 'Href:', href, 'Window width:', window.innerWidth);
+            
+            if (window.innerWidth <= 768) {
+                if (!isToggle && href && href !== '#') {
+                    // Actual navigation link - close menu
+                    console.log('Closing menu for navigation');
+                    setTimeout(() => setHamburgerState(false), 100);
+                }
+                // If it's a dropdown toggle or '#', keep menu open to show items
+            }
+        });
+
+        // ===============
+        // Fallback mobile nav (modal)
+        // ===============
+        function ensureFallbackButton() {
+            try {
+                const navbar = document.querySelector('.navbar');
+                if (!navbar || document.getElementById('openNavFallback')) return;
+                const oldHamburger = navbar.querySelector('.hamburger');
+                const btn = document.createElement('button');
+                btn.id = 'openNavFallback';
+                btn.className = 'hamburger-fallback';
+                btn.setAttribute('aria-label', 'منوی سریع');
+                btn.innerHTML = '<span></span><span></span><span></span>';
+                if (oldHamburger && oldHamburger.parentNode === navbar) {
+                    navbar.insertBefore(btn, oldHamburger);
+                    // Remove old hamburger
+                    try { oldHamburger.remove(); } catch {}
+                } else {
+                    navbar.appendChild(btn);
+                }
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openFallbackNav();
+                });
+            } catch {}
+        }
+        function buildFallbackModal() {
+            if (document.getElementById('nav-fallback-backdrop')) return;
+            const backdrop = document.createElement('div');
+            backdrop.id = 'nav-fallback-backdrop';
+            backdrop.className = 'nav-fallback-backdrop';
+            backdrop.innerHTML = `
+                <div class="nav-fallback-modal" role="dialog" aria-modal="true" aria-label="منوی ناوبری">
+                  <div class="nav-fallback-header">
+                    <div class="nav-fallback-title">منو</div>
+                    <button class="nav-fallback-close" aria-label="بستن">×</button>
+                  </div>
+                  <div class="nav-fallback-note">این منو موقت است به‌دلیل مشکل در منوی قبلی</div>
+                  <div class="nav-fallback-body"></div>
+                </div>
+            `;
+            document.body.appendChild(backdrop);
+            // Close handlers
+            backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeFallbackNav(); });
+            backdrop.querySelector('.nav-fallback-close')?.addEventListener('click', closeFallbackNav);
+        }
+        function getHeaderMenuClone() {
+            // Try to find the primary header nav menu
+            let src = document.querySelector('.header nav[role="navigation"] .nav-menu')
+                   || document.querySelector('.navbar nav[role="navigation"] .nav-menu')
+                   || document.querySelector('.header .nav-menu')
+                   || document.querySelector('.navbar .nav-menu')
+                   || document.querySelector('ul.nav-menu');
+            let clone;
+            if (src) {
+                clone = src.cloneNode(true);
+            } else {
+                // Reconstruct menu from available header links as a last resort
+                const ul = document.createElement('ul');
+                ul.className = 'nav-menu';
+                document.querySelectorAll('.header .nav-link').forEach(a => {
+                    const li = document.createElement('li');
+                    const a2 = a.cloneNode(true);
+                    // Remove conflicting IDs
+                    a2.removeAttribute('id');
+                    li.appendChild(a2);
+                    ul.appendChild(li);
+                });
+                clone = ul;
+            }
+            // If clone exists but empty (no items), synthesize the core menu
+            try {
+                const hasItems = !!clone && clone.querySelector('li');
+                if (!hasItems) {
+                    const ul = document.createElement('ul');
+                    ul.className = 'nav-menu';
+                    const base = (location.pathname.includes('/Pages/')) ? '..' : '.';
+                    ul.innerHTML = `
+                      <li>
+                        <a href="${base}/index.html" class="nav-link"><span>خانه</span></a>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle"><span>سیستم عامل</span><span class="dropdown-arrow">▼</span></a>
+                        <div class="dropdown-menu">
+                          <a href="${base}/Pages/ios/" class="dropdown-item"><span>آیفون</span></a>
+                          <a href="${base}/Pages/android/" class="dropdown-item"><span>اندروید</span></a>
+                          <a href="${base}/Pages/windows/" class="dropdown-item"><span>ویندوز</span></a>
+                        </div>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle"><span>پنل ها</span><span class="dropdown-arrow">▼</span></a>
+                        <div class="dropdown-menu">
+                          <a href="${base}/Pages/web-panel/" class="dropdown-item"><span>سایتی</span></a>
+                          <a href="${base}/Pages/python-panel.html" class="dropdown-item"><span>پایتونی</span></a>
+                        </div>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle"><span>سرور اختصاصی</span><span class="dropdown-arrow">▼</span></a>
+                        <div class="dropdown-menu">
+                          <a href="${base}/Pages/openvpn.html" class="dropdown-item"><span>اوپن وی پی ان</span></a>
+                          <a href="${base}/Pages/dns.html" class="dropdown-item"><span>دی ان اس</span></a>
+                          <a href="${base}/Pages/wireguard.html" class="dropdown-item"><span>وایرگارد</span></a>
+                        </div>
+                      </li>
+                      <li>
+                        <a href="${base}/Pages/about.html" class="nav-link"><span>درباره ما</span></a>
+                      </li>`;
+                    clone = ul;
+                }
+            } catch {}
+
+            // Normalize dropdown menus: make them visible and static
+            try {
+                clone.classList.remove('active');
+                clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+                clone.querySelectorAll('.dropdown-menu').forEach(m => {
+                    m.style.maxHeight = 'none';
+                    m.style.position = 'static';
+                    m.style.opacity = '1';
+                    m.style.visibility = 'visible';
+                    m.style.transform = 'none';
+                    m.style.display = 'grid';
+                    m.style.gap = '6px';
+                });
+            } catch {}
+            return clone;
+        }
+
+        function openFallbackNav() {
+            buildFallbackModal();
+            const backdrop = document.getElementById('nav-fallback-backdrop');
+            const body = backdrop.querySelector('.nav-fallback-body');
+            // Clone current nav items (shallow clone of UL)
+            try {
+                body.innerHTML = '';
+                // Actions row (login/register or dashboard)
+                const actions = document.createElement('div');
+                actions.className = 'nav-fallback-actions';
+                const srcActions = document.querySelector('.nav-actions');
+                if (srcActions) {
+                    const actClone = srcActions.cloneNode(true);
+                    // Remove duplicate IDs to avoid collisions
+                    actClone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+                    // Wire any button that opens auth
+                    actClone.querySelectorAll('button, a').forEach(el => {
+                        const t = (el.textContent||'').trim();
+                        if (/ورود|ثبت/.test(t)) {
+                            el.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                try { openAuthModal('login'); } catch {}
+                                closeFallbackNav();
+                            });
+                        }
+                    });
+                    actions.appendChild(actClone);
+                } else {
+                    // Fallback: a simple login/register button
+                    const loginBtn = document.createElement('button');
+                    loginBtn.type = 'button';
+                    loginBtn.className = 'btn btn-primary';
+                    loginBtn.textContent = 'ورود / ثبت‌نام';
+                    loginBtn.addEventListener('click', () => { try { openAuthModal('login'); } catch {} closeFallbackNav(); });
+                    actions.appendChild(loginBtn);
+                }
+
+                let clone = getHeaderMenuClone();
+                if (!clone) {
+                    const ul = document.createElement('ul');
+                    ul.className = 'nav-menu';
+                    ul.innerHTML = `
+                      <li>
+                        <a href="/index.html" class="nav-link"><span>خانه</span></a>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle"><span>سیستم عامل</span><span class="dropdown-arrow">▼</span></a>
+                        <div class="dropdown-menu">
+                          <a href="/Pages/ios/" class="dropdown-item"><span>آیفون</span></a>
+                          <a href="/Pages/android/" class="dropdown-item"><span>اندروید</span></a>
+                          <a href="/Pages/windows/" class="dropdown-item"><span>ویندوز</span></a>
+                        </div>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle"><span>پنل ها</span><span class="dropdown-arrow">▼</span></a>
+                        <div class="dropdown-menu">
+                          <a href="/Pages/web-panel/" class="dropdown-item"><span>سایتی</span></a>
+                          <a href="/Pages/python-panel.html" class="dropdown-item"><span>پایتونی</span></a>
+                        </div>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle"><span>سرور اختصاصی</span><span class="dropdown-arrow">▼</span></a>
+                        <div class="dropdown-menu">
+                          <a href="/Pages/openvpn.html" class="dropdown-item"><span>اوپن وی پی ان</span></a>
+                          <a href="/Pages/dns.html" class="dropdown-item"><span>دی ان اس</span></a>
+                          <a href="/Pages/wireguard.html" class="dropdown-item"><span>وایرگارد</span></a>
+                        </div>
+                      </li>
+                      <li>
+                        <a href="/Pages/about.html" class="nav-link"><span>درباره ما</span></a>
+                      </li>`;
+                    clone = ul;
+                }
+                // Ensure link clicks close modal
+                clone?.querySelectorAll('a').forEach(a => {
+                    a.addEventListener('click', () => closeFallbackNav());
+                });
+                body.appendChild(actions);
+                if (clone) body.appendChild(clone);
+            } catch {}
+            backdrop.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeFallbackNav() {
+            const backdrop = document.getElementById('nav-fallback-backdrop');
+            if (backdrop) backdrop.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        // Create fallback button on load and when resizing to mobile
+        ensureFallbackButton();
+        window.addEventListener('resize', () => {
+            if (window.innerWidth <= 768) ensureFallbackButton();
+        });
+    }
+
+    // Hero animation function
+    function animateHeroElements() {
+        const heroContent = document.querySelector('.hero-content');
+        if (heroContent) {
+            heroContent.style.opacity = '0';
+            heroContent.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                heroContent.style.transition = 'all 0.8s ease';
+                heroContent.style.opacity = '1';
+                heroContent.style.transform = 'translateY(0)';
+            }, 100);
+        }
+    }
 
     // Generic copy handler for buttons with data-copy attribute
     document.addEventListener('click', function(e) {
@@ -83,27 +405,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-
-        // Close on link click (mobile) - but NOT when clicking dropdown toggles
-        navMenu.addEventListener('click', (ev) => {
-            const a = ev.target.closest('a');
-            if (!a) return;
-            
-            console.log('Nav link clicked:', a.textContent.trim());
-            const isToggle = a.classList.contains('dropdown-toggle');
-            const href = a.getAttribute('href');
-            console.log('Is toggle:', isToggle, 'Href:', href, 'Window width:', window.innerWidth);
-            
-            if (window.innerWidth <= 768) {
-                if (!isToggle && href && href !== '#') {
-                    // Actual navigation link - close menu
-                    console.log('Closing menu for navigation');
-                    setTimeout(() => setHamburgerState(false), 100);
-                }
-                // If it's a dropdown toggle or '#', keep menu open to show items
-            }
-        });
-    }
 
     // Dropdown Menu Functionality
     const dropdowns = document.querySelectorAll('.dropdown');
@@ -695,11 +996,14 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const mobileAuthLink = document.getElementById('mobileAuthLink');
             const mobileAuthText = document.getElementById('mobileAuthText');
+            const registerSection = document.getElementById('register');
             
             if (AUTH.authenticated) {
                 // Desktop buttons
                 if (headerDashboardLink) headerDashboardLink.style.display = 'inline-flex';
                 if (openAuthModalHeaderBtn) openAuthModalHeaderBtn.style.display = 'none';
+                // Hide homepage register CTA section for authenticated users
+                if (registerSection) registerSection.style.display = 'none';
                 
                 // Mobile menu item
                 if (mobileAuthLink) {
@@ -711,6 +1015,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Desktop buttons
                 if (headerDashboardLink) headerDashboardLink.style.display = 'none';
                 if (openAuthModalHeaderBtn) openAuthModalHeaderBtn.style.display = 'inline-flex';
+                // Ensure CTA is visible for guests
+                if (registerSection) registerSection.style.display = '';
                 
                 // Mobile menu item
                 if (mobileAuthLink) {

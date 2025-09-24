@@ -1026,4 +1026,275 @@
       // Login screen is already shown
     }
   })();
+
+  // Scanner Management Module
+  const scannerManager = {
+    async loadCountries() {
+      try {
+        const data = await api.get('scanner/countries.json');
+        return JSON.parse(data);
+      } catch (e) {
+        console.warn('No scanner countries data found, using defaults');
+        return {
+          countries: [
+            { code: 'GB', name: 'انگلستان', total: 25, available: 18, servers: ['1.1.1.1', '8.8.8.8'] },
+            { code: 'DE', name: 'آلمان', total: 30, available: 22, servers: ['9.9.9.9', '1.0.0.1'] }
+          ]
+        };
+      }
+    },
+
+    async saveCountries(data) {
+      await api.put('scanner/countries.json', JSON.stringify(data, null, 2));
+    },
+
+    async loadAllocations() {
+      try {
+        const data = await api.get('scanner/allocations.json');
+        return JSON.parse(data);
+      } catch (e) {
+        return { allocations: [] };
+      }
+    },
+
+    flagEmoji(cc) {
+      if (!cc || cc.length !== 2) return '🌐';
+      const codePoints = [...cc.toUpperCase()].map(c => 0x1F1E6 - 'A'.charCodeAt(0) + c.charCodeAt(0));
+      return String.fromCodePoint(...codePoints);
+    },
+
+    renderCountries(countries) {
+      const container = $('#countries-list');
+      if (!container) return;
+
+      const fragment = document.createDocumentFragment();
+      
+      countries.forEach(country => {
+        const card = document.createElement('div');
+        card.className = 'country-card';
+        card.innerHTML = `
+          <div class="country-header">
+            <div class="country-flag">
+              <img src="https://flagcdn.com/w80/${country.code.toLowerCase()}.png" 
+                   alt="${country.name} flag" 
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+              <div style="display:none; font-size:24px;">${this.flagEmoji(country.code)}</div>
+            </div>
+            <div class="country-info">
+              <h4>${country.name}</h4>
+              <small>${country.code}</small>
+            </div>
+          </div>
+          <div class="country-stats">
+            <div class="country-stat">
+              <span class="number">${country.total || 0}</span>
+              <span class="label">کل</span>
+            </div>
+            <div class="country-stat available">
+              <span class="number">${country.available || 0}</span>
+              <span class="label">آزاد</span>
+            </div>
+            <div class="country-stat allocated">
+              <span class="number">${(country.total || 0) - (country.available || 0)}</span>
+              <span class="label">تخصیص‌یافته</span>
+            </div>
+          </div>
+          <div class="country-actions">
+            <button class="btn btn-xs btn-secondary" onclick="scannerManager.editCountry('${country.code}')">ویرایش</button>
+            <button class="btn btn-xs btn-danger" onclick="scannerManager.deleteCountry('${country.code}')">حذف</button>
+          </div>
+        `;
+        fragment.appendChild(card);
+      });
+
+      container.innerHTML = '';
+      container.appendChild(fragment);
+    },
+
+    updateStats(countries) {
+      const totalCountries = countries.length;
+      const totalServers = countries.reduce((sum, c) => sum + (c.total || 0), 0);
+      const availableServers = countries.reduce((sum, c) => sum + (c.available || 0), 0);
+      const allocatedServers = totalServers - availableServers;
+
+      const updateStat = (id, value) => {
+        const el = $(id);
+        if (el) el.textContent = value;
+      };
+
+      updateStat('#total-countries', totalCountries);
+      updateStat('#total-servers', totalServers);
+      updateStat('#available-servers', availableServers);
+      updateStat('#allocated-servers', allocatedServers);
+    },
+
+    async refreshData() {
+      try {
+        const data = await this.loadCountries();
+        this.renderCountries(data.countries || []);
+        this.updateStats(data.countries || []);
+      } catch (e) {
+        console.error('Error refreshing scanner data:', e);
+        alert('خطا در بارگذاری داده‌ها');
+      }
+    },
+
+    showCountryModal(country = null) {
+      const modal = $('#country-modal');
+      const title = $('#country-modal-title');
+      const form = $('#country-form');
+      
+      if (!modal || !form) return;
+
+      // Reset form
+      form.reset();
+      
+      if (country) {
+        title.textContent = 'ویرایش کشور';
+        $('#country-code').value = country.code;
+        $('#country-name').value = country.name;
+        $('#country-total').value = country.total || 0;
+        $('#country-available').value = country.available || 0;
+        $('#country-servers').value = (country.servers || []).join('\n');
+      } else {
+        title.textContent = 'افزودن کشور جدید';
+      }
+
+      modal.style.display = 'flex';
+    },
+
+    hideCountryModal() {
+      const modal = $('#country-modal');
+      if (modal) modal.style.display = 'none';
+    },
+
+    async editCountry(countryCode) {
+      try {
+        const data = await this.loadCountries();
+        const country = data.countries.find(c => c.code === countryCode);
+        if (country) {
+          this.showCountryModal(country);
+        }
+      } catch (e) {
+        console.error('Error loading country for edit:', e);
+      }
+    },
+
+    async deleteCountry(countryCode) {
+      if (!confirm(`آیا از حذف کشور ${countryCode} اطمینان دارید؟`)) return;
+
+      try {
+        const data = await this.loadCountries();
+        data.countries = data.countries.filter(c => c.code !== countryCode);
+        await this.saveCountries(data);
+        await this.refreshData();
+        alert('کشور با موفقیت حذف شد');
+      } catch (e) {
+        console.error('Error deleting country:', e);
+        alert('خطا در حذف کشور');
+      }
+    },
+
+    async saveCountry(formData) {
+      try {
+        const data = await this.loadCountries();
+        const countryIndex = data.countries.findIndex(c => c.code === formData.code);
+        
+        const servers = formData.servers
+          .split('\n')
+          .map(s => s.trim())
+          .filter(s => s.length > 0);
+
+        const countryData = {
+          code: formData.code.toUpperCase(),
+          name: formData.name,
+          total: parseInt(formData.total) || 0,
+          available: parseInt(formData.available) || 0,
+          servers: servers
+        };
+
+        if (countryIndex >= 0) {
+          data.countries[countryIndex] = countryData;
+        } else {
+          data.countries.push(countryData);
+        }
+
+        await this.saveCountries(data);
+        await this.refreshData();
+        this.hideCountryModal();
+        alert('کشور با موفقیت ذخیره شد');
+      } catch (e) {
+        console.error('Error saving country:', e);
+        alert('خطا در ذخیره کشور');
+      }
+    },
+
+    init() {
+      // Refresh button
+      const refreshBtn = $('#btn-scanner-refresh');
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => this.refreshData());
+      }
+
+      // Add country button
+      const addBtn = $('#btn-add-country');
+      if (addBtn) {
+        addBtn.addEventListener('click', () => this.showCountryModal());
+      }
+
+      // Modal close buttons
+      const closeBtn = $('#country-modal-close');
+      const cancelBtn = $('#country-cancel');
+      if (closeBtn) closeBtn.addEventListener('click', () => this.hideCountryModal());
+      if (cancelBtn) cancelBtn.addEventListener('click', () => this.hideCountryModal());
+
+      // Country form submission
+      const form = $('#country-form');
+      if (form) {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const formData = {
+            code: $('#country-code').value.trim(),
+            name: $('#country-name').value.trim(),
+            total: $('#country-total').value,
+            available: $('#country-available').value,
+            servers: $('#country-servers').value.trim()
+          };
+          
+          if (!formData.code || !formData.name) {
+            alert('لطفاً کد و نام کشور را وارد کنید');
+            return;
+          }
+          
+          this.saveCountry(formData);
+        });
+      }
+
+      // Load initial data when scanner view is shown
+      const scannerView = $('#view-scanner');
+      if (scannerView) {
+        // Use MutationObserver to detect when scanner view becomes visible
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'hidden') {
+              if (!scannerView.hasAttribute('hidden')) {
+                this.refreshData();
+              }
+            }
+          });
+        });
+        observer.observe(scannerView, { attributes: true });
+      }
+    }
+  };
+
+  // Initialize scanner manager when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => scannerManager.init());
+  } else {
+    scannerManager.init();
+  }
+
+  // Make scannerManager globally available
+  window.scannerManager = scannerManager;
 })();

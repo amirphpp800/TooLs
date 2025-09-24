@@ -100,6 +100,10 @@
             <span class="sidebar-icon">⚙️</span>
             <span>تنظیمات</span>
           </button>
+          <button class="sidebar-link" data-view="scanner">
+            <span class="sidebar-icon">🌐</span>
+            <span>مدیریت اسکنر DNS</span>
+          </button>
           <button class="sidebar-link" data-view="pages">
             <span class="sidebar-icon">📄</span>
             <span>فایل‌های استاتیک</span>
@@ -444,6 +448,119 @@
             </div>
             
             <div class="files-list" id="files-list"></div>
+          </div>
+
+          <!-- DNS Scanner Management -->
+          <div id="view-scanner" class="view" role="region" aria-label="مدیریت اسکنر DNS" hidden>
+            <div class="toolbar">
+              <div class="group">
+                <strong>🌐 مدیریت اسکنر DNS</strong>
+              </div>
+              <div class="group">
+                <button id="btn-scanner-refresh" class="btn btn-secondary">🔄 تازه‌سازی</button>
+                <button id="btn-add-country" class="btn btn-primary">+ افزودن کشور</button>
+              </div>
+            </div>
+
+            <!-- Statistics Overview -->
+            <div class="stats-grid" style="margin-bottom: 24px;">
+              <div class="stat-card">
+                <div class="stat-icon">🌍</div>
+                <div class="stat-info">
+                  <h3 id="total-countries">-</h3>
+                  <p>کل کشورها</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">🖥️</div>
+                <div class="stat-info">
+                  <h3 id="total-servers">-</h3>
+                  <p>کل سرورها</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                  <h3 id="available-servers">-</h3>
+                  <p>سرورهای آزاد</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-info">
+                  <h3 id="allocated-servers">-</h3>
+                  <p>سرورهای تخصیص‌یافته</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Countries Management -->
+            <div class="form-section">
+              <h3>🏳️ مدیریت کشورها</h3>
+              <div id="countries-list" class="countries-grid">
+                <p class="loading-text">در حال بارگذاری...</p>
+              </div>
+            </div>
+
+            <!-- Add/Edit Country Modal -->
+            <div id="country-modal" class="modal-backdrop" style="display: none;">
+              <div class="modal">
+                <div class="modal-header">
+                  <h3 id="country-modal-title">افزودن کشور جدید</h3>
+                  <button class="modal-close" id="country-modal-close">×</button>
+                </div>
+                <div class="modal-body">
+                  <form id="country-form" class="form form-grid">
+                    <label class="form-field">
+                      <span>کد کشور (ISO 3166-1 alpha-2)</span>
+                      <input type="text" id="country-code" placeholder="مثال: US, GB, DE" maxlength="2" style="text-transform: uppercase;" required />
+                    </label>
+                    <label class="form-field">
+                      <span>نام کشور (فارسی)</span>
+                      <input type="text" id="country-name" placeholder="مثال: آمریکا، انگلستان، آلمان" required />
+                    </label>
+                    <label class="form-field">
+                      <span>تعداد کل سرورها</span>
+                      <input type="number" id="country-total" min="0" value="0" required />
+                    </label>
+                    <label class="form-field">
+                      <span>تعداد سرورهای آزاد</span>
+                      <input type="number" id="country-available" min="0" value="0" required />
+                    </label>
+                    <div class="form-field" style="grid-column: 1/-1;">
+                      <span>آدرس‌های سرور (هر خط یک آدرس)</span>
+                      <textarea id="country-servers" placeholder="1.2.3.4&#10;5.6.7.8&#10;9.10.11.12" rows="6"></textarea>
+                      <small>هر خط یک آدرس IP یا دامنه. خطوط خالی نادیده گرفته می‌شوند.</small>
+                    </div>
+                    <div class="actions" style="grid-column: 1/-1;">
+                      <button type="submit" class="btn btn-primary">💾 ذخیره</button>
+                      <button type="button" class="btn btn-secondary" id="country-cancel">انصراف</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <!-- Server Allocations -->
+            <div class="form-section">
+              <h3>📊 تخصیص‌های فعال</h3>
+              <div class="toolbar">
+                <div class="group">
+                  <select id="allocation-filter" class="input">
+                    <option value="all">همه تخصیص‌ها</option>
+                    <option value="active">فعال</option>
+                    <option value="expired">منقضی‌شده</option>
+                  </select>
+                  <button id="btn-load-allocations" class="btn btn-secondary">بارگذاری</button>
+                </div>
+                <div class="group">
+                  <button id="btn-cleanup-expired" class="btn btn-danger">🗑️ پاک‌سازی منقضی‌ها</button>
+                </div>
+              </div>
+              <div id="allocations-list" class="allocations-grid">
+                <p class="loading-text">هیچ تخصیصی یافت نشد</p>
+              </div>
+            </div>
           </div>
 
           <!-- Static Pages (read-only helper) -->
