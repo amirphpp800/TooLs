@@ -1,17 +1,8 @@
 (function(){
   'use strict';
   const $ = (s, c=document)=>c.querySelector(s);
-  // Use relative API URLs; enable demo mode when opened via file://
-  const apiBase = ()=> '';
-  const isDemo = ()=> window.location.protocol === 'file:';
-
   // KV Storage functions
   async function getFromKV(key) {
-    if (isDemo()) {
-      const data = localStorage.getItem(`kv_${key}`);
-      return data ? JSON.parse(data) : null;
-    }
-    
     try {
       const res = await fetch(`/api/kv/${key}`);
       if (!res.ok) return null;
@@ -22,11 +13,6 @@
   }
 
   async function saveToKV(key, value) {
-    if (isDemo()) {
-      localStorage.setItem(`kv_${key}`, JSON.stringify(value));
-      return;
-    }
-    
     await fetch(`/api/kv/${key}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -131,18 +117,12 @@
     return !!token;
   }
 
-  // Get user ID from token (simplified)
+  // Get user ID from token
   function getUserId() {
     const token = localStorage.getItem('auth_token');
     if (!token) return null;
     
-    // In demo mode, create a simple user ID
-    if (token.startsWith('demo_')) {
-      return 'demo_user_123';
-    }
-    
-    // In real implementation, you would decode the JWT token
-    // For now, return a hash of the token
+    // Return a hash of the token for user identification
     return btoa(token).substring(0, 16);
   }
 
@@ -325,24 +305,6 @@
     }, 2000);
   }
 
-  async function initializeDemoData() {
-    if (!isDemo()) return;
-    
-    const demoAddresses = {
-      uk: ['185.199.108.153:443', '185.199.109.153:443', '185.199.110.153:443', '185.199.111.153:443'],
-      tr: ['104.21.45.67:443', '172.67.74.226:443', '104.26.10.78:443'],
-      de: ['46.232.249.138:443', '178.162.192.148:443', '95.179.158.23:443'],
-      qa: ['45.83.104.125:443', '178.128.196.118:443', '164.90.204.145:443'],
-      dz: ['51.15.228.83:443', '163.172.107.158:443', '195.154.169.198:443']
-    };
-    
-    for (const [country, addresses] of Object.entries(demoAddresses)) {
-      const existing = await getFromKV(`scanner_addresses_${country}`);
-      if (!existing || existing.length === 0) {
-        await saveToKV(`scanner_addresses_${country}`, addresses);
-      }
-    }
-  }
 
   // Listen for auth state changes
   function setupAuthListener() {
@@ -359,7 +321,6 @@
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
-    await initializeDemoData();
     loadLiveStats();
     
     // Setup auth state monitoring

@@ -1,9 +1,6 @@
 (function(){
   'use strict';
   const $ = (s, c=document)=>c.querySelector(s);
-  // Use relative API URLs; enable demo mode when opened via file://
-  const apiBase = ()=> '';
-  const isDemo = ()=> window.location.protocol === 'file:';
   let adminToken = '';
   let currentCountry = 'uk'; // Default to UK
 
@@ -15,12 +12,6 @@
 
   // KV Storage functions
   async function saveToKV(key, value) {
-    if (isDemo()) {
-      // Demo mode - use localStorage
-      localStorage.setItem(`kv_${key}`, JSON.stringify(value));
-      return;
-    }
-
     if (!adminToken) throw new Error('Admin token required');
 
     await getJSON(`/api/kv/${key}`, {
@@ -34,26 +25,18 @@
   }
 
   async function getFromKV(key) {
-    if (isDemo()) {
-      // Demo mode - use localStorage
-      const data = localStorage.getItem(`kv_${key}`);
-      return data ? JSON.parse(data) : null;
-    }
-
     try {
-      return await getJSON(`/api/kv/${key}`);
+      return await getJSON(`/api/kv/${key}`, {
+        headers: {
+          'Authorization': `Bearer ${adminToken}`
+        }
+      });
     } catch (e) {
       return null;
     }
   }
 
   async function deleteFromKV(key) {
-    if (isDemo()) {
-      // Demo mode - use localStorage
-      localStorage.removeItem(`kv_${key}`);
-      return;
-    }
-
     if (!adminToken) throw new Error('Admin token required');
 
     await fetch(`/api/kv/${key}`, {
@@ -165,8 +148,6 @@
 
   // Admin Login: send 5-digit OTP
   async function adminSend(){
-    const base = apiBase(); 
-
     const u = ($('#adm-user').value||'');
     const p = ($('#adm-pass').value||'');
     const id = ($('#adm-id').value||'').trim();
@@ -188,8 +169,6 @@
 
   // Admin Verify: get bearer token
   async function adminVerify(){
-    const base = apiBase(); 
-
     const id = ($('#adm-id').value||'').trim();
     const code = ($('#adm-otp').value||'').trim();
     if (!/^\d{5}$/.test(code)) return alert('کد ۵ رقمی را درست وارد کنید.');
@@ -306,13 +285,7 @@
   function checkENVStatus() {
     const indicator = $('#env-indicator');
     const text = $('#env-text');
-    const demo = isDemo();
-
-    if (demo) {
-      setStatus(indicator, text, 'warning', 'حالت دمو (localStorage)');
-    } else {
-      setStatus(indicator, text, 'online', 'URL نسبی فعال');
-    }
+    setStatus(indicator, text, 'online', 'محیط تولید فعال');
   }
 
   function setStatus(indicator, text, status, message) {

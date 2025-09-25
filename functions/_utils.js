@@ -65,6 +65,10 @@ export function generateCode() {
   return String(Math.floor(Math.random() * 10000)).padStart(4, '0');
 }
 
+export function generateAdminCode() {
+  return String(Math.floor(10000 + Math.random() * 90000));
+}
+
 export function cryptoRandom() {
   const arr = new Uint8Array(16);
   crypto.getRandomValues(arr);

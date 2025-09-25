@@ -175,8 +175,30 @@
     // Get config button
     const getConfigBtn = $('#btn-get-config');
     if (getConfigBtn) {
-      getConfigBtn.addEventListener('click', () => {
-        alert('کانفیگ جدید در حال آماده‌سازی است...\nبه زودی از طریق تلگرام ارسال می‌شود.');
+      getConfigBtn.addEventListener('click', async () => {
+        try {
+          const token = getToken();
+          if (!token) return;
+          
+          const res = await fetch('/api/config/request', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (res.ok) {
+            const status = getStatus();
+            if (status) status.textContent = 'درخواست کانفیگ ارسال شد. کانفیگ از طریق تلگرام ارسال خواهد شد.';
+          } else {
+            const status = getStatus();
+            if (status) status.textContent = 'خطا در درخواست کانفیگ. لطفا دوباره تلاش کنید.';
+          }
+        } catch (error) {
+          const status = getStatus();
+          if (status) status.textContent = 'خطا در برقراری ارتباط با سرور.';
+        }
       });
     }
   }

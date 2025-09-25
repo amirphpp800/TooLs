@@ -1,18 +1,8 @@
 (function(){
   'use strict';
   const $ = (s, c=document)=>c.querySelector(s);
-  // Use relative API URLs; enable demo mode when opened via file://
-  const apiBase = ()=> '';
-  const isDemo = ()=> window.location.protocol === 'file:';
-
-  // KV Storage functions (same as admin.js)
+  // KV Storage functions
   async function getFromKV(key) {
-    if (isDemo()) {
-      // Demo mode - use localStorage
-      const data = localStorage.getItem(`kv_${key}`);
-      return data ? JSON.parse(data) : null;
-    }
-    
     try {
       const res = await fetch(`/api/kv/${key}`);
       if (!res.ok) return null;
@@ -23,12 +13,6 @@
   }
 
   async function saveToKV(key, value) {
-    if (isDemo()) {
-      // Demo mode - use localStorage
-      localStorage.setItem(`kv_${key}`, JSON.stringify(value));
-      return;
-    }
-    
     await fetch(`/api/kv/${key}`, {
       method: 'PUT',
       headers: {
