@@ -1,8 +1,9 @@
 (function(){
   'use strict';
   const $ = (s, c=document)=>c.querySelector(s);
-
-  const apiBase = ()=> (window.APP_CONFIG?.CF_API_BASE || '').replace(/\/$/, '');
+  // Use relative API URLs; enable demo mode when opened via file://
+  const apiBase = ()=> '';
+  const isDemo = ()=> window.location.protocol === 'file:';
   let adminToken = '';
   let currentCountry = 'uk'; // Default to UK
 
@@ -14,16 +15,15 @@
 
   // KV Storage functions
   async function saveToKV(key, value) {
-    const base = apiBase();
-    if (!base) {
+    if (isDemo()) {
       // Demo mode - use localStorage
       localStorage.setItem(`kv_${key}`, JSON.stringify(value));
       return;
     }
-    
+
     if (!adminToken) throw new Error('Admin token required');
-    
-    await getJSON(`${base}/api/kv/${key}`, {
+
+    await getJSON(`/api/kv/${key}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -34,31 +34,29 @@
   }
 
   async function getFromKV(key) {
-    const base = apiBase();
-    if (!base) {
+    if (isDemo()) {
       // Demo mode - use localStorage
       const data = localStorage.getItem(`kv_${key}`);
       return data ? JSON.parse(data) : null;
     }
-    
+
     try {
-      return await getJSON(`${base}/api/kv/${key}`);
+      return await getJSON(`/api/kv/${key}`);
     } catch (e) {
       return null;
     }
   }
 
   async function deleteFromKV(key) {
-    const base = apiBase();
-    if (!base) {
+    if (isDemo()) {
       // Demo mode - use localStorage
       localStorage.removeItem(`kv_${key}`);
       return;
     }
-    
+
     if (!adminToken) throw new Error('Admin token required');
-    
-    await fetch(`${base}/api/kv/${key}`, {
+
+    await fetch(`/api/kv/${key}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${adminToken}`
@@ -168,7 +166,7 @@
   // Admin Login: send 5-digit OTP
   async function adminSend(){
     const base = apiBase(); 
-    
+
     const u = ($('#adm-user').value||'');
     const p = ($('#adm-pass').value||'');
     const id = ($('#adm-id').value||'').trim();
@@ -176,10 +174,10 @@
       $('#adm-status').textContent = 'نام کاربری، رمز و آیدی عددی را درست وارد کنید.';
       return;
     }
-    
+
     try {
       const h = 'Basic ' + btoa(`${u}:${p}`);
-      const res = await fetch(`${base}/api/admin/login`, { method:'POST', headers: { 'Authorization': h, 'Content-Type':'application/json' }, body: JSON.stringify({ admin_id: id }) });
+      const res = await fetch(`/api/admin/login`, { method:'POST', headers: { 'Authorization': h, 'Content-Type':'application/json' }, body: JSON.stringify({ admin_id: id }) });
       const data = await res.json().catch(()=>({}));
       $('#adm-status').textContent = res.ok ? 'کد ارسال شد.' : ((data?.error || 'خطا در ارسال کد') + (data?.details ? ` (${data.details})` : ''));
       if (res.ok) $('#admin-otp-section').style.display = 'block';
@@ -191,11 +189,11 @@
   // Admin Verify: get bearer token
   async function adminVerify(){
     const base = apiBase(); 
-    
+
     const id = ($('#adm-id').value||'').trim();
     const code = ($('#adm-otp').value||'').trim();
     if (!/^\d{5}$/.test(code)) return alert('کد ۵ رقمی را درست وارد کنید.');
-    const res = await fetch(`${base}/api/admin/verify`, { method:'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ admin_id: id, code }) });
+    const res = await fetch(`/api/admin/verify`, { method:'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ admin_id: id, code }) });
     const data = await res.json().catch(()=>({}));
     if (res.ok && data?.token){ 
       adminToken = data.token; 
@@ -219,7 +217,6 @@
 
   // System Status Check
   async function checkSystemStatus() {
-    const base = apiBase();
     const kvIndicator = $('#kv-indicator');
     const kvText = $('#kv-text');
     const apiIndicator = $('#api-indicator');
@@ -232,14 +229,8 @@
     setStatus(apiIndicator, apiText, 'warning', 'در حال بررسی');
     setStatus(envIndicator, envText, 'warning', 'در حال بررسی');
 
-    if (!base) {
-      setStatus(apiIndicator, apiText, 'offline', 'Base URL تنظیم نشده');
-      setStatus(envIndicator, envText, 'warning', 'CF_API_BASE خالی');
-      return;
-    }
-
     try {
-      const res = await fetch(`${base}/api/health`);
+      const res = await fetch(`/api/health`);
       if (!res.ok) {
         setStatus(apiIndicator, apiText, 'warning', `خطا ${res.status}`);
         return;
@@ -285,20 +276,19 @@
   async function checkAPIStatus() {
     const indicator = $('#api-indicator');
     const text = $('#api-text');
-    const base = apiBase();
-    
+
     try {
       // Create AbortController for timeout
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      const response = await fetch(`${base}/api/health`, { 
+
+      const response = await fetch(`/api/health`, { 
         method: 'GET',
         signal: controller.signal
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       if (response.ok) {
         setStatus(indicator, text, 'online', 'متصل');
       } else {
@@ -316,12 +306,12 @@
   function checkENVStatus() {
     const indicator = $('#env-indicator');
     const text = $('#env-text');
-    const base = apiBase();
-    
-    if (!base) {
-      setStatus(indicator, text, 'warning', 'CF_API_BASE خالی');
+    const demo = isDemo();
+
+    if (demo) {
+      setStatus(indicator, text, 'warning', 'حالت دمو (localStorage)');
     } else {
-      setStatus(indicator, text, 'online', 'تنظیم شده');
+      setStatus(indicator, text, 'online', 'URL نسبی فعال');
     }
   }
 
@@ -342,15 +332,15 @@
     // Admin login handlers
     $('#btn-admin-send')?.addEventListener('click', adminSend);
     $('#btn-admin-verify')?.addEventListener('click', adminVerify);
-    
+
     // Scanner management handlers
     $('#country-select')?.addEventListener('change', onCountryChange);
     $('#btn-add-addresses')?.addEventListener('click', addAddresses);
     $('#btn-clear-addresses')?.addEventListener('click', clearAddresses);
-    
+
     // System status handlers
     $('#btn-refresh-status')?.addEventListener('click', checkSystemStatus);
-    
+
     // Check system status on load with a small delay to ensure elements are ready
     setTimeout(() => {
       checkSystemStatus();

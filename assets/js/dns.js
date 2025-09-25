@@ -1,19 +1,19 @@
 (function(){
   'use strict';
   const $ = (s, c=document)=>c.querySelector(s);
-
-  const apiBase = ()=> (window.APP_CONFIG?.CF_API_BASE || '').replace(/\/$/, '');
+  // Use relative API URLs; enable demo mode when opened via file://
+  const apiBase = ()=> '';
+  const isDemo = ()=> window.location.protocol === 'file:';
 
   // KV Storage functions
   async function getFromKV(key) {
-    const base = apiBase();
-    if (!base) {
+    if (isDemo()) {
       const data = localStorage.getItem(`kv_${key}`);
       return data ? JSON.parse(data) : null;
     }
     
     try {
-      const res = await fetch(`${base}/api/kv/${key}`);
+      const res = await fetch(`/api/kv/${key}`);
       if (!res.ok) return null;
       return await res.json();
     } catch (e) {
@@ -22,13 +22,12 @@
   }
 
   async function saveToKV(key, value) {
-    const base = apiBase();
-    if (!base) {
+    if (isDemo()) {
       localStorage.setItem(`kv_${key}`, JSON.stringify(value));
       return;
     }
     
-    await fetch(`${base}/api/kv/${key}`, {
+    await fetch(`/api/kv/${key}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(value)
@@ -327,8 +326,7 @@
   }
 
   async function initializeDemoData() {
-    const base = apiBase();
-    if (base) return;
+    if (!isDemo()) return;
     
     const demoAddresses = {
       uk: ['185.199.108.153:443', '185.199.109.153:443', '185.199.110.153:443', '185.199.111.153:443'],

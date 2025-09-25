@@ -133,17 +133,6 @@
         if (resRel.ok) data = await resRel.json();
       } catch {}
 
-      // If configured, try external base (optional)
-      if (!data) {
-        const apiBase = window.APP_CONFIG?.CF_API_BASE?.trim();
-        if (apiBase) {
-          try {
-            const resCF = await fetch(apiBase.replace(/\/$/, '') + '/api/apps', { cache: 'no-store' });
-            if (resCF.ok) data = await resCF.json();
-          } catch {}
-        }
-      }
-
       // Fallback to local apps.json
       if (!data) {
         const res = await fetch(basePath + 'apps.json', { cache: 'no-store' });

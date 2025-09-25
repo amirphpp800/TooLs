@@ -1,8 +1,7 @@
 (function(){
   'use strict';
   const $ = (s, c=document)=>c.querySelector(s);
-
-  const apiBase = ()=> (window.APP_CONFIG?.CF_API_BASE || '').replace(/\/$/, '');
+  // Use relative API URLs
   const getStatus = ()=> $('#auth-status');
 
   function setToken(token){ localStorage.setItem('auth_token', token); }
@@ -13,12 +12,11 @@
 
   async function loadProfile(){
     try {
-      const base = apiBase(); 
       
       const token = getToken(); 
       if (!token) return;
       
-      const res = await fetch(`${base}/api/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await fetch(`/api/me`, { headers: { 'Authorization': `Bearer ${token}` } });
       if (!res.ok) return;
       const data = await res.json();
       showDashboard(data?.user || {});
@@ -81,7 +79,6 @@
   }
 
   async function requestCode(){
-    const base = apiBase(); 
     const id = ($('#tg-id').value||'').trim();
     const btn = $('#btn-request-code');
     
@@ -98,7 +95,7 @@
     }
     
     try {
-      const res = await fetch(`${base}/api/auth/request`, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ telegram_id: id }) });
+      const res = await fetch(`/api/auth/request`, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ telegram_id: id }) });
       const data = await res.json().catch(()=>({}));
       if (!res.ok) {
         const status = getStatus();
@@ -121,12 +118,11 @@
   }
 
   async function verify(){
-    const base = apiBase(); 
     
     const id = ($('#tg-id').value||'').trim();
     const code = ($('#otp').value||'').trim();
     if (!/^\d{4}$/.test(code)) return alert('کد ۴ رقمی را صحیح وارد کنید.');
-    const res = await fetch(`${base}/api/auth/verify`, { method:'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ telegram_id:id, code }) });
+    const res = await fetch(`/api/auth/verify`, { method:'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ telegram_id:id, code }) });
     const data = await res.json().catch(()=>({}));
     if (!res.ok || !data?.token) return alert(data?.error || 'تایید ناموفق بود.');
     setToken(data.token);

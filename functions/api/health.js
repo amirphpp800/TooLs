@@ -10,14 +10,15 @@ export async function onRequestGet({ env }) {
     const timestamp = new Date().toISOString();
     
     // Test KV connection if available
-    let kvStatus = 'unknown';
-    try {
-      if (env.DATABASE) {
+    let kvStatus = 'missing';
+    if (env.DATABASE) {
+      try {
         await env.DATABASE.put('health_check', timestamp, { expirationTtl: 60 });
         const testValue = await env.DATABASE.get('health_check');
+        kvStatus = testValue ? 'ok' : 'error';
+      } catch (e) {
+        kvStatus = 'error';
       }
-    } catch (e) {
-      kvStatus = 'error';
     }
     
     // Environment presence checks
