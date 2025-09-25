@@ -196,19 +196,26 @@
 
   function logout(){
     clearToken();
-    const loginSection = $('#login-section');
-    const dashboardSection = $('#dashboard-section');
     
-    if (loginSection) loginSection.style.display = 'block';
-    if (dashboardSection) dashboardSection.style.display = 'none';
-    
+    // Clear any status messages
     const status = getStatus();
     if (status) status.textContent = 'خروج انجام شد.';
     
     // Reset form
-    $('#tg-id').value = '';
-    $('#otp').value = '';
-    $('#otp-section').style.display = 'none';
+    const tgIdInput = $('#tg-id');
+    const otpInput = $('#otp');
+    const otpSection = $('#otp-section');
+    
+    if (tgIdInput) tgIdInput.value = '';
+    if (otpInput) otpInput.value = '';
+    if (otpSection) otpSection.style.display = 'none';
+    
+    // Redirect to home page after a short delay to show the logout message
+    setTimeout(() => {
+      // Check if we're in a subdirectory (pages folder)
+      const base = location.pathname.includes('/pages/') ? '../' : '';
+      location.href = base + 'index.html';
+    }, 1000);
   }
 
   function setupDashboardActions() {

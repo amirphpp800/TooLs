@@ -211,6 +211,9 @@
     const yearEl = $('#year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+    // Fix image paths after components are loaded
+    fixImagePaths();
+
       // After header is mounted, wire dropdown and hamburger
       setupNavDropdown();
       setupHamburgerMenu();
@@ -283,10 +286,19 @@
 
       // OS links inside each menu
       item.querySelectorAll('[data-rel="route-os"]').forEach(a => {
+        const os = a.getAttribute('data-os');
+        if (os) {
+          a.href = base + `pages/os-${os}.html`;
+        }
         a.addEventListener('click', (e)=>{
           e.preventDefault();
           const os = a.getAttribute('data-os');
-          if (os) { closeAll(); updateBackdrop(); location.href = base + `pages/os-${os}.html`; }
+          if (os) { 
+            closeAll(); 
+            updateBackdrop(); 
+            setBodyScroll(false);
+            window.location.href = base + `pages/os-${os}.html`; 
+          }
         });
       });
     });
@@ -302,7 +314,26 @@
     document.querySelectorAll('[data-rel="page-link"]').forEach(a => {
       const page = a.getAttribute('data-page') || '';
       a.href = base + 'pages/' + page;
-      a.addEventListener('click', ()=>{ closeAll(); updateBackdrop(); setBodyScroll(false); });
+      a.addEventListener('click', (e)=>{
+        e.preventDefault();
+        closeAll(); 
+        updateBackdrop(); 
+        setBodyScroll(false);
+        window.location.href = base + 'pages/' + page;
+      });
+    });
+
+    // Handle home link
+    document.querySelectorAll('[data-rel="home-link"]').forEach(a => {
+      // If we're in pages folder, go back to root, otherwise stay at root
+      a.href = base === '../' ? '../index.html' : './index.html';
+      a.addEventListener('click', (e)=>{
+        e.preventDefault();
+        closeAll(); 
+        updateBackdrop(); 
+        setBodyScroll(false);
+        window.location.href = base === '../' ? '../index.html' : './index.html';
+      });
     });
 
   }
@@ -379,6 +410,17 @@
   }
 
   function scrollToId(id){ const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior:'smooth', block:'start' }); }
+
+  function fixImagePaths() {
+    // Fix all images with data-src attribute
+    const images = $$('img[data-src]');
+    images.forEach(img => {
+      const dataSrc = img.getAttribute('data-src');
+      if (dataSrc) {
+        img.src = basePath + dataSrc;
+      }
+    });
+  }
 
   function setupStartNowButton() {
     // Setup "همین الان شروع کنید" button functionality
