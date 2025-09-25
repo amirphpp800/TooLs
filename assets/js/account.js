@@ -3,7 +3,7 @@
   const $ = (s, c=document)=>c.querySelector(s);
 
   const apiBase = ()=> (window.APP_CONFIG?.CF_API_BASE || '').replace(/\/$/, '');
-  const status = $('#auth-status');
+  const getStatus = ()=> $('#auth-status');
 
   function setToken(token){ localStorage.setItem('auth_token', token); }
   function getToken(){ return localStorage.getItem('auth_token') || ''; }
@@ -104,14 +104,51 @@
   }
 
   async function requestCode(){
-    const base = apiBase(); if (!base) return alert('CF_API_BASE تنظیم نشده است.');
+    const base = apiBase(); 
     const id = ($('#tg-id').value||'').trim();
-    if (!/^\d+$/.test(id)) return alert('شناسه عددی تلگرام را صحیح وارد کنید.');
-    const res = await fetch(`${base}/api/auth/request`, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ telegram_id: id }) });
-    const data = await res.json().catch(()=>({}));
-    if (!res.ok) return alert(data?.error || 'ارسال کد ناموفق بود.');
-    status.textContent = 'کد ارسال شد. تلگرام خود را بررسی کنید.';
-    $('#otp-section').style.display = 'block';
+    const btn = $('#btn-request-code');
+    
+    if (!/^\d+$/.test(id)) {
+      const status = getStatus();
+      if (status) status.textContent = 'شناسه عددی تلگرام را صحیح وارد کنید.';
+      return;
+    }
+    
+    // Add loading state
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'در حال ارسال...';
+    }
+    
+    if (!base) {
+      // Demo mode
+      const status = getStatus();
+      if (status) status.textContent = 'حالت نمایشی - کد ارسال شد. کد نمونه: 1234';
+      $('#otp-section').style.display = 'block';
+      return;
+    }
+    
+    try {
+      const res = await fetch(`${base}/api/auth/request`, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ telegram_id: id }) });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok) {
+        const status = getStatus();
+        if (status) status.textContent = data?.error || 'ارسال کد ناموفق بود.';
+        return;
+      }
+      const status2 = getStatus();
+      if (status2) status2.textContent = 'کد ارسال شد. تلگرام خود را بررسی کنید.';
+      $('#otp-section').style.display = 'block';
+    } catch (error) {
+      const status = getStatus();
+      if (status) status.textContent = 'خطا در برقراری ارتباط با سرور.';
+    } finally {
+      // Reset button state
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'دریافت کد تایید';
+      }
+    }
   }
 
   async function verify(){
@@ -123,7 +160,8 @@
       if (!/^\d{4}$/.test(code)) return alert('کد ۴ رقمی را صحیح وارد کنید.');
       
       setToken('demo_token_' + Date.now());
-      status.textContent = 'حساب تایید شد.';
+      const status = getStatus();
+      if (status) status.textContent = 'حساب تایید شد.';
       loadProfile();
       return;
     }
@@ -135,7 +173,8 @@
     const data = await res.json().catch(()=>({}));
     if (!res.ok || !data?.token) return alert(data?.error || 'تایید ناموفق بود.');
     setToken(data.token);
-    status.textContent = 'حساب تایید شد.';
+    const status = getStatus();
+    if (status) status.textContent = 'حساب تایید شد.';
     loadProfile();
   }
 
@@ -163,7 +202,8 @@
     if (loginSection) loginSection.style.display = 'block';
     if (dashboardSection) dashboardSection.style.display = 'none';
     
-    status.textContent = 'خروج انجام شد.';
+    const status = getStatus();
+    if (status) status.textContent = 'خروج انجام شد.';
     
     // Reset form
     $('#tg-id').value = '';
@@ -183,6 +223,7 @@
     // Demo mode message
     setTimeout(() => {
       const base = apiBase();
+      const status = getStatus();
       if (!base && status) {
         status.innerHTML = '<small style="color: var(--muted);">حالت نمایشی - برای اتصال به API، CF_API_BASE را تنظیم کنید</small>';
       }
@@ -190,23 +231,41 @@
   }
 
   document.addEventListener('DOMContentLoaded', ()=>{
-    $('#btn-request-code')?.addEventListener('click', requestCode);
-    $('#btn-verify')?.addEventListener('click', verify);
-    
-    // Demo dashboard button
-    $('#btn-demo')?.addEventListener('click', () => {
-      setToken('demo_token_preview');
-      loadProfile();
-    });
-    
-    // Handle both logout buttons (in login and dashboard sections)
-    document.addEventListener('click', (e) => {
-      if (e.target.id === 'btn-logout') {
-        logout();
+    // Wait a bit for components to load
+    setTimeout(() => {
+      $('#btn-request-code')?.addEventListener('click', requestCode);
+      $('#btn-verify')?.addEventListener('click', verify);
+      
+      // Demo dashboard button
+      const demoBtn = $('#btn-demo');
+      console.log('Looking for demo button:', demoBtn); // Debug log
+      if (demoBtn) {
+        console.log('Demo button found, adding event listener');
+        demoBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          console.log('Demo button clicked'); // Debug log
+          setToken('demo_token_preview');
+          loadProfile();
+        });
+      } else {
+        console.warn('Demo button not found, will use event delegation');
       }
-    });
-    
-    setupDashboardActions();
-    updateState();
+      
+      // Handle both logout buttons (in login and dashboard sections)
+      document.addEventListener('click', (e) => {
+        if (e.target.id === 'btn-logout') {
+          logout();
+        }
+        // Also handle demo button via event delegation
+        if (e.target.id === 'btn-demo') {
+          console.log('Demo button clicked via delegation');
+          setToken('demo_token_preview');
+          loadProfile();
+        }
+      });
+      
+      setupDashboardActions();
+      updateState();
+    }, 500);
   });
 })();

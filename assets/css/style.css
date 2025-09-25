@@ -6,6 +6,22 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "DanaFaNum";
+  src: url("../../Font/DanaFaNum-Bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "DanaFaNum";
+  src: url("../../Font/DanaFaNum-Medium.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Scroll reveal animations */
 .reveal { 
   opacity: 0; 
@@ -50,20 +66,6 @@
 .no-js .intro-card.reveal {
   opacity: 1 !important;
   transform: none !important;
-}
-@font-face {
-  font-family: "DanaFaNum";
-  src: url("../../Font/DanaFaNum-Bold.woff") format("woff");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "DanaFaNum";
-  src: url("../../Font/DanaFaNum-Medium.woff") format("woff");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
 }
 
 :root {
@@ -135,7 +137,7 @@ a:hover { color: var(--primary-2); }
 .top-nav a, .top-nav .nav-link { padding: 8px 12px; border-radius: 10px; border: 1px solid transparent; color: var(--text); background: transparent; cursor: pointer; }
 .top-nav a:hover, .top-nav .nav-link:hover { background: rgba(255,255,255,0.06); border-color: var(--stroke); }
 .nav-item { position: relative; }
-.nav-item .menu { position: absolute; top: calc(100% + 8px); inset-inline-end: 0; min-width: 220px; padding: 8px; display: flex; flex-direction: column; gap: 4px; opacity: 0; transform: translateY(-6px) scale(.98); pointer-events: none; transition: opacity .18s ease, transform .18s ease; z-index: 30; }
+.nav-item .menu { position: absolute; top: calc(100% + 8px); left: 0; min-width: 220px; padding: 8px; display: flex; flex-direction: column; gap: 4px; opacity: 0; transform: translateY(-6px) scale(.98); pointer-events: none; transition: opacity .18s ease, transform .18s ease; z-index: 30; }
 .nav-item.open .menu { opacity: 1; transform: none; pointer-events: auto; }
 .nav-item .menu a { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; }
 .nav-item .menu a img { width: 18px; height: 18px; flex: 0 0 18px; }
@@ -161,9 +163,69 @@ body.nav-open { overflow: hidden; }
 .hero-full .hero-content { padding-top: 8vh; padding-bottom: 6vh; }
 
 /* Buttons */
-.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 12px; border: 1px solid var(--stroke); color: var(--text); transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease; }
-.btn.primary { background: color-mix(in oklab, var(--accent) 24%, transparent); border-color: color-mix(in oklab, var(--accent) 40%, transparent); }
-.btn:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(0,0,0,0.35); }
+.btn { 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 8px; 
+  padding: 10px 16px; 
+  border-radius: 12px; 
+  border: 1px solid var(--stroke); 
+  color: var(--text); 
+  background: transparent;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
+  font-size: inherit;
+  transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease, border-color .2s ease; 
+}
+
+.btn.primary { 
+  background: color-mix(in oklab, var(--accent) 24%, transparent); 
+  border-color: color-mix(in oklab, var(--accent) 40%, transparent); 
+}
+
+.btn:hover, .btn:focus-visible { 
+  transform: translateY(-1px); 
+  box-shadow: 0 8px 18px rgba(0,0,0,0.35); 
+  outline: none;
+}
+
+.btn:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(247, 126, 45, 0.3), 0 8px 18px rgba(0,0,0,0.35);
+}
+
+/* DNS Get Button with glowing hover effect */
+.dns-get-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all .3s ease;
+}
+
+.dns-get-btn:hover {
+  background: color-mix(in oklab, var(--accent) 35%, transparent);
+  border-color: var(--accent);
+  box-shadow: 
+    0 8px 25px rgba(0,0,0,0.4),
+    0 0 20px rgba(247, 126, 45, 0.3),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+  transform: translateY(-2px);
+}
+
+.dns-get-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left .6s ease;
+}
+
+.dns-get-btn:hover::before {
+  left: 100%;
+}
 
 /* Sections */
 .section { margin: 24px 16px; padding: 16px; }

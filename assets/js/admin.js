@@ -168,8 +168,22 @@
   async function adminSend(){
     const base = apiBase(); 
     if (!base) {
-      // Demo mode
-      $('#adm-status').textContent = 'حالت نمایشی - کد ارسال شد.';
+      // Demo mode - validate inputs first
+      const u = ($('#adm-user').value||'').trim();
+      const p = ($('#adm-pass').value||'').trim();
+      const id = ($('#adm-id').value||'').trim();
+      
+      if (!u || !p || !id) {
+        $('#adm-status').textContent = 'لطفاً تمام فیلدها را پر کنید.';
+        return;
+      }
+      
+      if (!/^\d+$/.test(id)) {
+        $('#adm-status').textContent = 'آیدی تلگرام باید فقط شامل اعداد باشد.';
+        return;
+      }
+      
+      $('#adm-status').textContent = 'حالت نمایشی - کد ارسال شد. کد نمونه: 12345';
       $('#admin-otp-section').style.display = 'block';
       return;
     }
@@ -177,12 +191,20 @@
     const u = ($('#adm-user').value||'');
     const p = ($('#adm-pass').value||'');
     const id = ($('#adm-id').value||'').trim();
-    if (!u || !p || !/^\d+$/.test(id)) return alert('نام کاربری، رمز و آیدی عددی را درست وارد کنید.');
-    const h = 'Basic ' + btoa(`${u}:${p}`);
-    const res = await fetch(`${base}/api/admin/login`, { method:'POST', headers: { 'Authorization': h, 'Content-Type':'application/json' }, body: JSON.stringify({ admin_id: id }) });
-    const data = await res.json().catch(()=>({}));
-    $('#adm-status').textContent = res.ok ? 'کد ارسال شد.' : (data?.error || 'خطا در ارسال کد');
-    if (res.ok) $('#admin-otp-section').style.display = 'block';
+    if (!u || !p || !/^\d+$/.test(id)) {
+      $('#adm-status').textContent = 'نام کاربری، رمز و آیدی عددی را درست وارد کنید.';
+      return;
+    }
+    
+    try {
+      const h = 'Basic ' + btoa(`${u}:${p}`);
+      const res = await fetch(`${base}/api/admin/login`, { method:'POST', headers: { 'Authorization': h, 'Content-Type':'application/json' }, body: JSON.stringify({ admin_id: id }) });
+      const data = await res.json().catch(()=>({}));
+      $('#adm-status').textContent = res.ok ? 'کد ارسال شد.' : (data?.error || 'خطا در ارسال کد');
+      if (res.ok) $('#admin-otp-section').style.display = 'block';
+    } catch (error) {
+      $('#adm-status').textContent = 'خطا در برقراری ارتباط با سرور.';
+    }
   }
 
   // Admin Verify: get bearer token
@@ -284,10 +306,16 @@
     }
     
     try {
+      // Create AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       const response = await fetch(`${base}/api/health`, { 
         method: 'GET',
-        timeout: 5000 
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
       
       if (response.ok) {
         setStatus(indicator, text, 'online', 'متصل');
@@ -295,7 +323,11 @@
         setStatus(indicator, text, 'warning', `خطا ${response.status}`);
       }
     } catch (error) {
-      setStatus(indicator, text, 'offline', 'قطع');
+      if (error.name === 'AbortError') {
+        setStatus(indicator, text, 'offline', 'تایم‌اوت');
+      } else {
+        setStatus(indicator, text, 'offline', 'قطع');
+      }
     }
   }
 
@@ -340,7 +372,9 @@
     // System status handlers
     $('#btn-refresh-status')?.addEventListener('click', checkSystemStatus);
     
-    // Check system status on load
-    checkSystemStatus();
+    // Check system status on load with a small delay to ensure elements are ready
+    setTimeout(() => {
+      checkSystemStatus();
+    }, 500);
   });
 })();
