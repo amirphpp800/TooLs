@@ -107,12 +107,13 @@
     const input = $('#addresses-input').value.trim();
     if (!input) return alert('آدرس‌هایی را وارد کنید');
 
-    const newAddresses = input.split('\n')
-      .map(line => line.trim())
-      .filter(line => line && line.includes(':'));
+    // Accept only IPv4 addresses, no port
+    const ipv4Regex = /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/;
+    const lines = input.split('\n').map(line => line.trim()).filter(Boolean);
+    const newAddresses = lines.filter(line => ipv4Regex.test(line));
 
     if (!newAddresses.length) {
-      return alert('آدرس معتبری یافت نشد. فرمت: IP:PORT');
+      return alert('آدرس معتبری یافت نشد. فقط IP نسخه 4 بدون پورت وارد کنید (مثال: 1.2.3.4)');
     }
 
     try {
@@ -124,7 +125,7 @@
       $('#addresses-input').value = '';
       loadAddresses();
       
-      alert(`${newAddresses.length} آدرس اضافه شد`);
+      alert(`${newAddresses.length} آدرس IPv4 اضافه شد`);
     } catch (e) {
       console.error('Error adding addresses:', e);
       alert('خطا در اضافه کردن آدرس‌ها');
@@ -167,26 +168,6 @@
   // Admin Login: send 5-digit OTP
   async function adminSend(){
     const base = apiBase(); 
-    if (!base) {
-      // Demo mode - validate inputs first
-      const u = ($('#adm-user').value||'').trim();
-      const p = ($('#adm-pass').value||'').trim();
-      const id = ($('#adm-id').value||'').trim();
-      
-      if (!u || !p || !id) {
-        $('#adm-status').textContent = 'لطفاً تمام فیلدها را پر کنید.';
-        return;
-      }
-      
-      if (!/^\d+$/.test(id)) {
-        $('#adm-status').textContent = 'آیدی تلگرام باید فقط شامل اعداد باشد.';
-        return;
-      }
-      
-      $('#adm-status').textContent = 'حالت نمایشی - کد ارسال شد. کد نمونه: 12345';
-      $('#admin-otp-section').style.display = 'block';
-      return;
-    }
     
     const u = ($('#adm-user').value||'');
     const p = ($('#adm-pass').value||'');
@@ -200,7 +181,7 @@
       const h = 'Basic ' + btoa(`${u}:${p}`);
       const res = await fetch(`${base}/api/admin/login`, { method:'POST', headers: { 'Authorization': h, 'Content-Type':'application/json' }, body: JSON.stringify({ admin_id: id }) });
       const data = await res.json().catch(()=>({}));
-      $('#adm-status').textContent = res.ok ? 'کد ارسال شد.' : (data?.error || 'خطا در ارسال کد');
+      $('#adm-status').textContent = res.ok ? 'کد ارسال شد.' : ((data?.error || 'خطا در ارسال کد') + (data?.details ? ` (${data.details})` : ''));
       if (res.ok) $('#admin-otp-section').style.display = 'block';
     } catch (error) {
       $('#adm-status').textContent = 'خطا در برقراری ارتباط با سرور.';
@@ -210,16 +191,6 @@
   // Admin Verify: get bearer token
   async function adminVerify(){
     const base = apiBase(); 
-    if (!base) {
-      // Demo mode
-      const code = ($('#adm-otp').value||'').trim();
-      if (!/^\d{5}$/.test(code)) return alert('کد ۵ رقمی را درست وارد کنید.');
-      
-      adminToken = 'demo_admin_token';
-      $('#adm-status').textContent = 'ورود ادمین موفق بود.';
-      showAdminDashboard();
-      return;
-    }
     
     const id = ($('#adm-id').value||'').trim();
     const code = ($('#adm-otp').value||'').trim();
@@ -246,34 +217,50 @@
     }
   }
 
-  // Initialize demo data for UK
-  async function initializeDemoData() {
-    const base = apiBase();
-    if (base) return; // Only for demo mode
-    
-    const demoAddresses = [
-      '185.199.108.153:443',
-      '185.199.109.153:443',
-      '185.199.110.153:443',
-      '185.199.111.153:443'
-    ];
-    
-    const existing = await getFromKV('scanner_addresses_uk');
-    if (!existing || existing.length === 0) {
-      await saveToKV('scanner_addresses_uk', demoAddresses);
-    }
-  }
-
   // System Status Check
   async function checkSystemStatus() {
-    // Check KV Storage
-    await checkKVStatus();
-    
-    // Check API Connection
-    await checkAPIStatus();
-    
-    // Check Environment Variables
-    checkENVStatus();
+    const base = apiBase();
+    const kvIndicator = $('#kv-indicator');
+    const kvText = $('#kv-text');
+    const apiIndicator = $('#api-indicator');
+    const apiText = $('#api-text');
+    const envIndicator = $('#env-indicator');
+    const envText = $('#env-text');
+
+    // Default states
+    setStatus(kvIndicator, kvText, 'warning', 'نامشخص');
+    setStatus(apiIndicator, apiText, 'warning', 'در حال بررسی');
+    setStatus(envIndicator, envText, 'warning', 'در حال بررسی');
+
+    if (!base) {
+      setStatus(apiIndicator, apiText, 'offline', 'Base URL تنظیم نشده');
+      setStatus(envIndicator, envText, 'warning', 'CF_API_BASE خالی');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${base}/api/health`);
+      if (!res.ok) {
+        setStatus(apiIndicator, apiText, 'warning', `خطا ${res.status}`);
+        return;
+      }
+      const data = await res.json();
+
+      // API
+      setStatus(apiIndicator, apiText, 'online', 'متصل');
+
+      // KV
+      const kvOk = data?.services?.kv === 'ok';
+      setStatus(kvIndicator, kvText, kvOk ? 'online' : 'offline', kvOk ? 'متصل' : 'قطع');
+
+      // ENV details
+      const botSet = data?.services?.bot_token === 'set';
+      const adminSet = data?.services?.admin_credentials === 'set';
+      const envMsg = `BOT_TOKEN: ${botSet ? 'تنظیم شده' : 'ناموجود'} | Admin: ${adminSet ? 'تنظیم شده' : 'ناموجود'}`;
+      setStatus(envIndicator, envText, botSet && adminSet ? 'online' : 'warning', envMsg);
+    } catch (e) {
+      setStatus(apiIndicator, apiText, 'offline', 'قطع');
+    }
   }
 
   async function checkKVStatus() {
@@ -299,11 +286,6 @@
     const indicator = $('#api-indicator');
     const text = $('#api-text');
     const base = apiBase();
-    
-    if (!base) {
-      setStatus(indicator, text, 'warning', 'حالت نمایشی');
-      return;
-    }
     
     try {
       // Create AbortController for timeout
@@ -357,9 +339,6 @@
   }
 
   document.addEventListener('DOMContentLoaded', ()=>{
-    // Initialize demo data
-    initializeDemoData();
-    
     // Admin login handlers
     $('#btn-admin-send')?.addEventListener('click', adminSend);
     $('#btn-admin-verify')?.addEventListener('click', adminVerify);

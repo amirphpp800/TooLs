@@ -14,19 +14,6 @@
   async function loadProfile(){
     try {
       const base = apiBase(); 
-      if (!base) {
-        // Demo mode - show dashboard with sample data
-        showDashboard({
-          telegram_id: '123456789',
-          name: 'کاربر نمونه',
-          plan: 'پلن طلایی',
-          downloads: 15,
-          configs: 3,
-          days_left: 25,
-          traffic_used: '2.5 GB'
-        });
-        return;
-      }
       
       const token = getToken(); 
       if (!token) return;
@@ -37,16 +24,6 @@
       showDashboard(data?.user || {});
     } catch (e){ 
       console.warn('profile load failed', e); 
-      // Show demo dashboard on error
-      showDashboard({
-        telegram_id: '123456789',
-        name: 'کاربر نمونه',
-        plan: 'پلن پایه',
-        downloads: 5,
-        configs: 1,
-        days_left: '∞',
-        traffic_used: '0.8 GB'
-      });
     }
   }
 
@@ -120,14 +97,6 @@
       btn.textContent = 'در حال ارسال...';
     }
     
-    if (!base) {
-      // Demo mode
-      const status = getStatus();
-      if (status) status.textContent = 'حالت نمایشی - کد ارسال شد. کد نمونه: 1234';
-      $('#otp-section').style.display = 'block';
-      return;
-    }
-    
     try {
       const res = await fetch(`${base}/api/auth/request`, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ telegram_id: id }) });
       const data = await res.json().catch(()=>({}));
@@ -153,18 +122,6 @@
 
   async function verify(){
     const base = apiBase(); 
-    if (!base) {
-      // Demo mode - simulate successful login
-      const id = ($('#tg-id').value||'').trim();
-      const code = ($('#otp').value||'').trim();
-      if (!/^\d{4}$/.test(code)) return alert('کد ۴ رقمی را صحیح وارد کنید.');
-      
-      setToken('demo_token_' + Date.now());
-      const status = getStatus();
-      if (status) status.textContent = 'حساب تایید شد.';
-      loadProfile();
-      return;
-    }
     
     const id = ($('#tg-id').value||'').trim();
     const code = ($('#otp').value||'').trim();
@@ -226,15 +183,6 @@
         alert('کانفیگ جدید در حال آماده‌سازی است...\nبه زودی از طریق تلگرام ارسال می‌شود.');
       });
     }
-    
-    // Demo mode message
-    setTimeout(() => {
-      const base = apiBase();
-      const status = getStatus();
-      if (!base && status) {
-        status.innerHTML = '<small style="color: var(--muted);">حالت نمایشی - برای اتصال به API، CF_API_BASE را تنظیم کنید</small>';
-      }
-    }, 1000);
   }
 
   document.addEventListener('DOMContentLoaded', ()=>{
@@ -242,32 +190,10 @@
     setTimeout(() => {
       $('#btn-request-code')?.addEventListener('click', requestCode);
       $('#btn-verify')?.addEventListener('click', verify);
-      
-      // Demo dashboard button
-      const demoBtn = $('#btn-demo');
-      console.log('Looking for demo button:', demoBtn); // Debug log
-      if (demoBtn) {
-        console.log('Demo button found, adding event listener');
-        demoBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          console.log('Demo button clicked'); // Debug log
-          setToken('demo_token_preview');
-          loadProfile();
-        });
-      } else {
-        console.warn('Demo button not found, will use event delegation');
-      }
-      
-      // Handle both logout buttons (in login and dashboard sections)
+      // Handle logout buttons (in login and dashboard sections)
       document.addEventListener('click', (e) => {
         if (e.target.id === 'btn-logout') {
           logout();
-        }
-        // Also handle demo button via event delegation
-        if (e.target.id === 'btn-demo') {
-          console.log('Demo button clicked via delegation');
-          setToken('demo_token_preview');
-          loadProfile();
         }
       });
       

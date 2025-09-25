@@ -15,7 +15,11 @@ export async function onRequestPost({ request, env }) {
   const text = `کد تایید شما: ${code}`;
   const tgUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
   const resTG = await fetch(tgUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: Number(telegramId), text }) });
-  if (!resTG.ok) return json({ error: 'failed to send code' }, 502);
+  if (!resTG.ok) {
+    let details = '';
+    try { details = await resTG.text(); } catch {}
+    return json({ error: 'failed to send code', status: resTG.status, details }, 502);
+  }
 
   return json({ ok: true });
 }

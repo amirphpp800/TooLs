@@ -152,46 +152,10 @@
     document.querySelector('.card').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  // Initialize demo data if needed
-  async function initializeDemoData() {
-    const base = apiBase();
-    if (base) return; // Only for demo mode
-    
-    const countries = ['uk', 'us', 'de', 'nl', 'fr'];
-    const demoAddresses = {
-      uk: ['185.199.108.153:443', '185.199.109.153:443', '185.199.110.153:443'],
-      us: ['104.21.45.67:443', '172.67.74.226:443', '104.26.10.78:443'],
-      de: ['46.232.249.138:443', '178.162.192.148:443', '95.179.158.23:443'],
-      nl: ['45.83.104.125:443', '178.128.196.118:443', '164.90.204.145:443'],
-      fr: ['51.15.228.83:443', '163.172.107.158:443', '195.154.169.198:443']
-    };
-    
-    for (const country of countries) {
-      const existing = await getFromKV(`scanner_addresses_${country}`);
-      if (!existing || existing.length === 0) {
-        await saveToKV(`scanner_addresses_${country}`, demoAddresses[country]);
-      }
-    }
-  }
-
   document.addEventListener('DOMContentLoaded', async () => {
-    // Initialize demo data
-    await initializeDemoData();
-    
     // Event listeners
     $('#btn-get-address')?.addEventListener('click', getAddress);
     $('#btn-copy-address')?.addEventListener('click', copyAddress);
     $('#btn-get-another')?.addEventListener('click', resetForm);
-    
-    // Show demo message if in demo mode
-    const base = apiBase();
-    if (!base) {
-      setTimeout(() => {
-        const statusEl = $('#scanner-status');
-        if (statusEl && !statusEl.textContent) {
-          statusEl.innerHTML = '<small style="color: var(--muted);">حالت نمایشی - برای اتصال به API، CF_API_BASE را تنظیم کنید</small>';
-        }
-      }, 1000);
-    }
   });
 })();

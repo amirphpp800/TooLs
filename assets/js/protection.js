@@ -124,10 +124,7 @@
       document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;color:#fff;font-family:Arial;text-align:center;"><div><h1>دسترسی محدود</h1><p>این سایت نمی‌تواند در iframe نمایش داده شود</p></div></div>';
     }
 
-    // Console warning
-    console.clear();
-    console.log('%cتوقف!', 'color: red; font-size: 50px; font-weight: bold;');
-    console.log('%cاین یک ویژگی مرورگر است که برای توسعه‌دهندگان طراحی شده است. اگر کسی به شما گفته که چیزی را اینجا کپی/پیست کنید تا ویژگی‌ای را فعال کنید یا حساب کسی را هک کنید، این یک کلاهبرداری است و به آن‌ها دسترسی به حساب شما خواهد داد.', 'color: red; font-size: 16px;');
+    // Console warning removed per request
   }
 
   // Initialize protection when DOM is ready

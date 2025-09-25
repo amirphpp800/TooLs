@@ -16,8 +16,13 @@ export async function onRequestPost({ request, env }) {
   const tgUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
   const text = `کد ورود ادمین: ${code}`;
   const resTG = await fetch(tgUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: Number(admin_id), text }) });
-  if (!resTG.ok) return json({ error: 'failed to send code' }, 502);
+  if (!resTG.ok) {
+    let details = '';
+    try { details = await resTG.text(); } catch {}
+    return json({ error: 'failed to send code', status: resTG.status, details }, 502);
+  }
   return json({ ok: true });
 }
 
 function gen5(){ return String(Math.floor(10000 + Math.random()*90000)); }
+
